@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - AstroMathaino</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
+
+    <style>
+        * {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .cosmic-gradient {
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+        }
+
+        .star-field {
+            background-image: radial-gradient(2px 2px at 20px 30px, #eee, rgba(0, 0, 0, 0)),
+                radial-gradient(2px 2px at 40px 70px, #fff, rgba(0, 0, 0, 0)),
+                radial-gradient(2px 2px at 50px 160px, #ddd, rgba(0, 0, 0, 0));
+            background-repeat: repeat;
+            background-size: 200px 200px;
+            animation: twinkle 5s ease-in-out infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% {
+                opacity: 0.5;
+            }
+            50% {
+                opacity: 1;
+            }
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .login-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .login-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.3);
+            border-color: rgba(99, 102, 241, 0.5);
+        }
+
+        .hidden-panel {
+            display: none;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0c29 100%);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            animation: slideIn 0.3s ease-out;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .otp-display {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #60a5fa;
+            letter-spacing: 0.5rem;
+            margin: 1rem 0;
+            text-shadow: 0 0 20px rgba(96, 165, 250, 0.5);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .alert {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alert-success {
+            background: rgba(34, 197, 94, 0.2);
+            border: 1px solid #22c55e;
+            color: #22c55e;
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid #ef4444;
+            color: #ef4444;
+        }
+    </style>
+</head>
+
+<body class="cosmic-gradient min-h-screen text-white flex items-center justify-center p-4">
+    <div class="fixed inset-0 star-field opacity-30 pointer-events-none"></div>
+
+    <div class="relative w-full max-w-md">
+        <!-- Back Button -->
+        <a href="index.html"
+            class="absolute -top-12 left-0 flex items-center gap-2 text-gray-300 hover:text-white transition-colors">
+            <i data-lucide="arrow-left" class="w-5 h-5"></i>
+            Back to Home
+        </a>
+
+        <!-- Selection Panel -->
+        <div id="selection-panel" class="glass rounded-3xl p-8">
+            <div class="text-center mb-8">
+                <div
+                    class="w-16 h-16 mx-auto bg-gradient-to-br from-indigo-400 to-purple-600 rounded-full flex items-center justify-center mb-4">
+                    <i data-lucide="orbit" class="w-8 h-8 text-white"></i>
+                </div>
+                <h1 class="text-2xl font-bold">Welcome to AstroMathaino</h1>
+                <p class="text-gray-400 mt-2">Choose your portal</p>
+            </div>
+
+            <div class="space-y-4">
+                <button onclick="showAdminLogin()"
+                    class="login-card w-full p-6 rounded-2xl border border-gray-600 bg-gray-800/50 flex items-center gap-4">
+                    <div class="w-12 h-12 bg-red-500/20 rounded-full flex items-center justify-center">
+                        <i data-lucide="shield" class="w-6 h-6 text-red-400"></i>
+                    </div>
+                    <div class="text-left">
+                        <div class="font-semibold text-lg">Admin Portal</div>
+                        <div class="text-sm text-gray-400">For course management</div>
+                    </div>
+                    <i data-lucide="chevron-right" class="w-5 h-5 ml-auto text-gray-400"></i>
+                </button>
+
+                <button onclick="showStudentLogin()"
+                    class="login-card w-full p-6 rounded-2xl border border-gray-600 bg-gray-800/50 flex items-center gap-4">
+                    <div class="w-12 h-12 bg-indigo-500/20 rounded-full flex items-center justify-center">
+                        <i data-lucide="graduation-cap" class="w-6 h-6 text-indigo-400"></i>
+                    </div>
+                    <div class="text-left">
+                        <div class="font-semibold text-lg">Student Portal</div>
+                        <div class="text-sm text-gray-400">Access courses & books</div>
+                    </div>
+                    <i data-lucide="chevron-right" class="w-5 h-5 ml-auto text-gray-400"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Admin Login Panel -->
+        <div id="admin-panel" class="glass rounded-3xl p-8 hidden-panel">
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 mx-auto bg-red-500/20 rounded-full flex items-center justify-center mb-4">
+                    <i data-lucide="shield" class="w-8 h-8 text-red-400"></i>
+                </div>
+                <h1 class="text-2xl font-bold">Admin Login</h1>
+                <p class="text-gray-400 mt-2">Restricted access only</p>
+            </div>
+
+            <div id="admin-alert"></div>
+
+            <form onsubmit="handleAdminLogin(event)" class="space-y-6">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Email</label>
+                    <input type="email" id="admin-email" required
+                        class="w-full px-4 py-3 rounded-lg bg-gray-900 border border-gray-700 focus:border-red-500 focus:outline-none transition-colors"
+                        placeholder="admin@astromathaino.com">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Password</label>
+                    <input type="password" id="admin-password" required
+                        class="w-full px-4 py-3 rounded-lg bg-gray-900 border border-gray-700 focus:border-red-500 focus:outline-none transition-colors"
+                        placeholder="••••••••">
+                </div>
+                <button type="submit"
+                    class="w-full bg-gradient-to-r from-red-500 to-red-600 py-3 rounded-lg font-semibold hover:shadow-lg transition-all transform hover:scale-[1.02]">
+                    Login as Admin
+                </button>
+            </form>
+
+            <button onclick="showSelection()"
+                class="mt-6 w-full py-2 text-gray-400 hover:text-white transition-colors flex items-center justify-center gap-2">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                Back to selection
+            </button>
+        </div>
+
+        <!-- Student Login Panel -->
+        <div id="student-panel" class="glass rounded-3xl p-8 hidden-panel">
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 mx-auto bg-indigo-500/20 rounded-full flex items-center justify-center mb-4">
+                    <i data-lucide="graduation-cap" class="w-8 h-8 text-indigo-400"></i>
+                </div>
+                <h1 class="text-2xl font-bold">Student Portal</h1>
+                <p class="text-gray-400 mt-2" id="student-auth-mode">Login to your account</p>
+            </div>
+
+            <!-- Login Form -->
+            <form id="student-login-form" class="space-y-6">
+                <div id="login-alert"></div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-2">Email</label>
+                    <input type="email" id="student-email" required
+                        class="w-full px-4 py-3 rounded-lg bg-gray-900 border border-gray-700 focus:border-indigo-500 focus:outline-none transition-colors"
+                        placeholder="student@email.com">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Password</label>
+                    <input type="password" id="student-password" required
+                        class="w-full px-4 py-3 rounded-lg bg-gray-900 border border-gray-700 focus:border-indigo-500 focus:outline-none transition-colors"
+                        placeholder="••••••••">
+                </div>
+                <button type="submit" id="login-btn"
+                    class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 py-3 rounded-lg font-semibold hover:shadow-lg transition-all transform hover:scale-[1.02]">
+                    Login
+                </button>
+            </form>
+
+            <!-- Register Form -->
+            <form id="student-register-form" class="space-y-6 hidden">
+                <div id="register-alert"></div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-2">Full Name</label>
+                    <input type="text" id="student-name" required
+                        class="w-full px-4 py-3 rounded-lg bg-gray-900 border border-gray-700 focus:border-indigo-500 focus:outline-none transition-colors"
+                        placeholder="John Doe">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Email</label>
+                    <input type="email" id="register-email" required
+                        class="w-full px-4 py-3 rounded-lg bg-gray-900 border border-gray-700 focus:border-indigo-500 focus:outline-none transition-colors"
+                        placeholder="student@email.com">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Password</label>
+                    <input type="password" id="register-password" required
+                        class="w-full px-4 py-3 rounded-lg bg-gray-900 border border-gray-700 focus:border-indigo-500 focus:outline-none transition-colors"
+                        placeholder="••••••••">
+                </div>
+                <button type="button" onclick="requestOtp()"
+                    class="w-full bg-gradient-to-r from-green-500 to-green-600 py-3 rounded-lg font-semibold hover:shadow-lg transition-all transform hover:scale-[1.02]">
+                    <i data-lucide="mail" class="w-4 h-4 inline mr-2"></i>
+                    Get OTP Code
+                </button>
+            </form>
+
+            <!-- OTP Verification Form -->
+            <form id="student-otp-form" class="space-y-6 hidden">
+                <div id="otp-alert"></div>
+
+                <div class="text-center">
+                    <p class="text-gray-400 mb-3">Your OTP code is shown below. Click it to auto-fill.</p>
+                    <div id="otp-inline-display" class="hidden bg-indigo-900/40 border-2 border-indigo-400 rounded-xl p-4 mb-4 cursor-pointer"
+                        onclick="document.getElementById('student-otp').value=this.dataset.otp"
+                        title="Click to auto-fill">
+                        <p class="text-xs text-indigo-300 mb-1 uppercase tracking-widest">Your OTP — tap to fill</p>
+                        <p class="text-4xl font-bold text-indigo-300 tracking-[0.3em]" id="otp-inline-code">------</p>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-2">OTP Code</label>
+                    <input type="text" id="student-otp" maxlength="6" required
+                        class="w-full px-4 py-3 rounded-lg bg-gray-900 border border-gray-700 focus:border-indigo-500 focus:outline-none transition-colors text-center text-2xl letter-spacing-2"
+                        placeholder="000000">
+                </div>
+
+                <div class="text-center">
+                    <p class="text-sm text-gray-400 mb-2">OTP expires in:</p>
+                    <p class="text-2xl font-bold text-indigo-400" id="otp-timer">10:00</p>
+                </div>
+
+                <button type="button" onclick="submitOtp()"
+                    class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 py-3 rounded-lg font-semibold hover:shadow-lg transition-all transform hover:scale-[1.02]">
+                    Verify & Register
+                </button>
+
+                <button type="button" onclick="resendOtp()" id="resend-btn"
+                    class="w-full bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-400 px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
+                    disabled>
+                    Resend OTP (<span id="resend-timer">30</span>s)
+                </button>
+            </form>
+
+            <div class="mt-6 text-center">
+                <button onclick="toggleStudentMode()" id="toggle-auth-btn"
+                    class="text-indigo-400 hover:text-indigo-300 transition-colors text-sm">
+                    New student? Register here
+                </button>
+            </div>
+
+            <button onclick="showSelection()"
+                class="mt-4 w-full py-2 text-gray-400 hover:text-white transition-colors flex items-center justify-center gap-2">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                Back to selection
+            </button>
+        </div>
+    </div>
+
+    <!-- OTP Display Modal (for development) -->
+    <div id="otp-modal" class="modal">
+        <div class="modal-content">
+            <div class="w-16 h-16 mx-auto bg-gradient-to-br from-indigo-400 to-purple-600 rounded-full flex items-center justify-center mb-4">
+                <i data-lucide="mail" class="w-8 h-8 text-white"></i>
+            </div>
+            <h2 class="text-2xl font-bold mb-4">Your OTP Code</h2>
+            <p class="text-gray-400 mb-6">Use this code to complete your registration</p>
+            <div class="otp-display" id="otp-code-display">000000</div>
+            <p class="text-sm text-gray-500 mb-6">This code will expire in 10 minutes</p>
+            <button onclick="closeOtpModal()"
+                class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 py-3 rounded-lg font-semibold hover:shadow-lg transition-all transform hover:scale-[1.02]">
+                I Got It
+            </button>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        lucide.createIcons();
+
+        let studentMode = 'login';
+        let otpData = {
+            email: null,
+            name: null,
+            password: null,
+            otp: null,
+            attempts: 0,
+            expiryTime: null
+        };
+
+        let timers = {
+            otpExpiry: null,
+            resendCooldown: null
+        };
+
+        // Alert Helper
+        function showAlert(containerId, message, type = 'error') {
+            const container = document.getElementById(containerId);
+            container.innerHTML = `
+                <div class="alert alert-${type}">
+                    <i data-lucide="${type === 'success' ? 'check-circle' : 'alert-circle'}" class="w-4 h-4"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        // Panel Navigation
+        function showAdminLogin() {
+            document.getElementById('selection-panel').classList.add('hidden-panel');
+            document.getElementById('admin-panel').classList.remove('hidden-panel');
+        }
+
+        function showStudentLogin() {
+            document.getElementById('selection-panel').classList.add('hidden-panel');
+            document.getElementById('student-panel').classList.remove('hidden-panel');
+        }
+
+        function showSelection() {
+            document.getElementById('selection-panel').classList.remove('hidden-panel');
+            document.getElementById('admin-panel').classList.add('hidden-panel');
+            document.getElementById('student-panel').classList.add('hidden-panel');
+            resetForm();
+        }
+
+        function resetForm() {
+            document.getElementById('student-login-form').classList.remove('hidden');
+            document.getElementById('student-register-form').classList.add('hidden');
+            document.getElementById('student-otp-form').classList.add('hidden');
+            stopAllTimers();
+            studentMode = 'login';
+        }
+
+        // Toggle between Login and Register
+        function toggleStudentMode() {
+            studentMode = studentMode === 'login' ? 'register' : 'login';
+            
+            const loginForm = document.getElementById('student-login-form');
+            const registerForm = document.getElementById('student-register-form');
+            const otpForm = document.getElementById('student-otp-form');
+            const toggleBtn = document.getElementById('toggle-auth-btn');
+
+            if (studentMode === 'register') {
+                loginForm.classList.add('hidden');
+                registerForm.classList.remove('hidden');
+                otpForm.classList.add('hidden');
+                toggleBtn.textContent = 'Already have an account? Login';
+                document.getElementById('student-auth-mode').textContent = 'Create new account';
+            } else {
+                loginForm.classList.remove('hidden');
+                registerForm.classList.add('hidden');
+                otpForm.classList.add('hidden');
+                toggleBtn.textContent = 'New student? Register here';
+                document.getElementById('student-auth-mode').textContent = 'Login to your account';
+            }
+        }
+
+        // Admin Login
+        function handleAdminLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('admin-email').value;
+            const password = document.getElementById('admin-password').value;
+
+            if (email === 'anuragdas1102@gmail.com' && password === 'AD777') {
+                localStorage.setItem('astro_user', JSON.stringify({
+                    type: 'admin',
+                    email: email,
+                    name: 'Anurag Das'
+                }));
+                window.location.href = 'admin.html';
+            } else {
+                showAlert('admin-alert', 'Invalid admin credentials!', 'error');
+            }
+        }
+
+        // OTP Generation
+        function requestOtp() {
+            const name = document.getElementById('student-name').value.trim();
+            const email = document.getElementById('register-email').value.trim();
+            const password = document.getElementById('register-password').value;
+
+            document.getElementById('register-alert').innerHTML = '';
+
+            if (!name || !email || !password) {
+                showAlert('register-alert', 'Please fill all fields', 'error');
+                return;
+            }
+
+            if (password.length < 6) {
+                showAlert('register-alert', 'Password must be at least 6 characters', 'error');
+                return;
+            }
+
+            // Check if email exists
+            db.collection('students').doc(email).get().then(doc => {
+                if (doc.exists) {
+                    showAlert('register-alert', 'Email already registered', 'error');
+                    return;
+                }
+
+                // Generate OTP
+                const otp = String(Math.floor(Math.random() * 900000) + 100000);
+                const expiryTime = new Date(Date.now() + 10 * 60000);
+
+                // Save to Firestore
+                db.collection('otps').doc(email).set({
+                    email: email,
+                    otp: otp,
+                    expires_at: expiryTime.toISOString(),
+                    attempts: 0,
+                    created_at: new Date().toISOString()
+                }).then(() => {
+                    otpData = {
+                        email: email,
+                        name: name,
+                        password: password,
+                        otp: otp,
+                        attempts: 0,
+                        expiryTime: expiryTime.getTime()
+                    };
+
+                    // Show OTP in popup modal
+                    document.getElementById('otp-code-display').textContent = otp;
+                    document.getElementById('otp-modal').classList.add('show');
+
+                    // Also show OTP inline in the form so it stays visible after closing modal
+                    const inlineDisplay = document.getElementById('otp-inline-display');
+                    document.getElementById('otp-inline-code').textContent = otp;
+                    inlineDisplay.dataset.otp = otp;
+                    inlineDisplay.classList.remove('hidden');
+
+                    // Show OTP form
+                    document.getElementById('student-register-form').classList.add('hidden');
+                    document.getElementById('student-otp-form').classList.remove('hidden');
+
+                    // Start timers
+                    startOtpTimer();
+                    startResendTimer();
+
+                    showAlert('otp-alert', 'Your OTP code is shown above. Click it to auto-fill.', 'success');
+                });
+            });
+        }
+
+        function submitOtp() {
+            const enteredOtp = document.getElementById('student-otp').value;
+
+            document.getElementById('otp-alert').innerHTML = '';
+
+            if (enteredOtp.length !== 6) {
+                showAlert('otp-alert', 'Please enter all 6 digits', 'error');
+                return;
+            }
+
+            if (Date.now() > otpData.expiryTime) {
+                showAlert('otp-alert', 'OTP expired', 'error');
+                return;
+            }
+
+            if (enteredOtp !== otpData.otp) {
+                otpData.attempts++;
+
+                if (otpData.attempts >= 3) {
+                    showAlert('otp-alert', 'Maximum attempts exceeded', 'error');
+                    stopAllTimers();
+                    setTimeout(() => toggleStudentMode(), 2000);
+                    return;
+                }
+
+                showAlert('otp-alert', `Invalid OTP. ${3 - otpData.attempts} attempts remaining`, 'error');
+                document.getElementById('student-otp').value = '';
+                return;
+            }
+
+            // Register user
+            registerStudent();
+        }
+
+        function registerStudent() {
+            showAlert('otp-alert', 'Registering...', 'success');
+
+            auth.createUserWithEmailAndPassword(otpData.email, otpData.password)
+                .then((userCredential) => {
+                    return db.collection('students').doc(otpData.email).set({
+                        uid: userCredential.user.uid,
+                        name: otpData.name,
+                        email: otpData.email,
+                        created_at: new Date().toISOString()
+                    }).then(() => {
+                        return db.collection('otps').doc(otpData.email).delete();
+                    });
+                })
+                .then(() => {
+                    stopAllTimers();
+                    localStorage.setItem('astro_user', JSON.stringify({
+                        type: 'student',
+                        email: otpData.email,
+                        name: otpData.name
+                    }));
+
+                    showAlert('otp-alert', 'Registration successful!', 'success');
+                    setTimeout(() => {
+                        window.location.href = 'student.html';
+                    }, 1500);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showAlert('otp-alert', 'Registration failed: ' + error.message, 'error');
+                });
+        }
+
+        function resendOtp() {
+            const newOtp = String(Math.floor(Math.random() * 900000) + 100000);
+            const expiryTime = new Date(Date.now() + 10 * 60000);
+
+            db.collection('otps').doc(otpData.email).set({
+                email: otpData.email,
+                otp: newOtp,
+                expires_at: expiryTime.toISOString(),
+                attempts: 0,
+                created_at: new Date().toISOString()
+            }).then(() => {
+                otpData.otp = newOtp;
+                otpData.attempts = 0;
+                otpData.expiryTime = expiryTime.getTime();
+
+                // Update popup modal
+                document.getElementById('otp-code-display').textContent = newOtp;
+                document.getElementById('otp-modal').classList.add('show');
+                // Update inline display
+                document.getElementById('otp-inline-code').textContent = newOtp;
+                document.getElementById('otp-inline-display').dataset.otp = newOtp;
+                document.getElementById('otp-inline-display').classList.remove('hidden');
+
+                showAlert('otp-alert', 'New OTP generated! Click the code above to auto-fill.', 'success');
+                document.getElementById('student-otp').value = '';
+
+                startOtpTimer();
+                startResendTimer();
+            });
+        }
+
+        // Timers
+        function startOtpTimer() {
+            let remaining = 600;
+            if (timers.otpExpiry) clearInterval(timers.otpExpiry);
+
+            timers.otpExpiry = setInterval(() => {
+                remaining--;
+                const minutes = Math.floor(remaining / 60);
+                const seconds = remaining % 60;
+                document.getElementById('otp-timer').textContent = 
+                    `${minutes}:${String(seconds).padStart(2, '0')}`;
+
+                if (remaining <= 0) {
+                    clearInterval(timers.otpExpiry);
+                    showAlert('otp-alert', 'OTP expired', 'error');
+                    toggleStudentMode();
+                    toggleStudentMode();
+                }
+            }, 1000);
+        }
+
+        function startResendTimer() {
+            let remaining = 30;
+            const resendBtn = document.getElementById('resend-btn');
+            resendBtn.disabled = true;
+
+            if (timers.resendCooldown) clearInterval(timers.resendCooldown);
+
+            timers.resendCooldown = setInterval(() => {
+                remaining--;
+                document.getElementById('resend-timer').textContent = remaining;
+
+                if (remaining <= 0) {
+                    clearInterval(timers.resendCooldown);
+                    resendBtn.disabled = false;
+                }
+            }, 1000);
+        }
+
+        function stopAllTimers() {
+            if (timers.otpExpiry) clearInterval(timers.otpExpiry);
+            if (timers.resendCooldown) clearInterval(timers.resendCooldown);
+        }
+
+        function closeOtpModal() {
+            document.getElementById('otp-modal').classList.remove('show');
+        }
+
+        // Student Login Form
+        document.getElementById('student-login-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            document.getElementById('login-alert').innerHTML = '';
+
+            const email = document.getElementById('student-email').value;
+            const password = document.getElementById('student-password').value;
+
+            auth.signInWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    return db.collection('students').doc(email).get().then(doc => {
+                        const studentData = doc.exists ? doc.data() : {};
+                        localStorage.setItem('astro_user', JSON.stringify({
+                            type: 'student',
+                            email: email,
+                            name: studentData?.name || email.split('@')[0],
+                            uid: userCredential.user.uid
+                        }));
+
+                        showAlert('login-alert', 'Login successful!', 'success');
+                        setTimeout(() => {
+                            window.location.href = 'student.html';
+                        }, 1000);
+                    });
+                })
+                .catch(error => {
+                    let message = 'Login failed. Please try again.';
+                    if (error.code === 'auth/user-not-found') {
+                        message = 'Email not registered. Please sign up.';
+                    } else if (error.code === 'auth/wrong-password') {
+                        message = 'Incorrect password.';
+                    } else if (error.code === 'auth/invalid-credential') {
+                        message = 'Invalid email or password.';
+                    } else if (error.code === 'auth/invalid-email') {
+                        message = 'Please enter a valid email address.';
+                    } else if (error.code === 'auth/too-many-requests') {
+                        message = 'Too many attempts. Please try again later.';
+                    }
+                    showAlert('login-alert', message, 'error');
+                });
+        });
+    </script>
+</body>
+
+</html>

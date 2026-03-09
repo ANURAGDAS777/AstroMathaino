@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AstroMathaino - Explore the Cosmos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <!-- firebase-config.js MUST come after SDK scripts -->
+    <script src="firebase-config.js"></script>
+
+    <style>
+        * {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .cosmic-gradient {
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+        }
+
+        .star-field {
+            background-image: radial-gradient(2px 2px at 20px 30px, #eee, rgba(0, 0, 0, 0)),
+                radial-gradient(2px 2px at 40px 70px, #fff, rgba(0, 0, 0, 0)),
+                radial-gradient(2px 2px at 50px 160px, #ddd, rgba(0, 0, 0, 0)),
+                radial-gradient(2px 2px at 90px 40px, #fff, rgba(0, 0, 0, 0)),
+                radial-gradient(2px 2px at 130px 80px, #fff, rgba(0, 0, 0, 0));
+            background-repeat: repeat;
+            background-size: 200px 200px;
+            animation: twinkle 5s ease-in-out infinite;
+        }
+
+        @keyframes twinkle {
+            0%,
+            100% {
+                opacity: 0.5;
+            }
+
+            50% {
+                opacity: 1;
+            }
+        }
+
+        .float {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        .glow {
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
+        }
+
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.3);
+        }
+
+        .logo-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+
+<body class="cosmic-gradient min-h-screen text-white overflow-x-hidden">
+    <!-- Star background -->
+    <div class="fixed inset-0 star-field opacity-20 pointer-events-none"></div>
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 bg-gray-900/90 backdrop-blur-md border-b border-indigo-500/30">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="#" class="flex items-center space-x-3">
+                <div
+                    class="w-10 h-10 bg-gradient-to-br from-indigo-400 to-purple-600 rounded-full flex items-center justify-center glow">
+                    <i data-lucide="orbit" class="w-6 h-6 text-white"></i>
+                </div>
+                <span class="text-2xl font-bold logo-text">AstroMathaino</span>
+            </a>
+            <div class="hidden md:flex space-x-8">
+                <a href="#courses" class="hover:text-indigo-400 transition-colors">Courses</a>
+                <a href="#books" class="hover:text-indigo-400 transition-colors">Books</a>
+                <a href="#about" class="hover:text-indigo-400 transition-colors">About</a>
+                <a href="#contact" class="hover:text-indigo-400 transition-colors">Contact</a>
+            </div>
+            <div class="flex space-x-4">
+                <a href="login.html"
+                    class="bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-2 rounded-full hover:shadow-lg hover:shadow-indigo-500/50 transition-all transform hover:scale-105">
+                    Login
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="relative pt-32 pb-20 px-6 text-center">
+        <div class="container mx-auto">
+            <div class="float mb-8">
+                <i data-lucide="telescope" class="w-24 h-24 mx-auto text-indigo-400 opacity-80"></i>
+            </div>
+            <h1 class="text-5xl md:text-7xl font-bold mb-6 leading-tight">
+                Explore the <span
+                    class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">Universe</span>
+            </h1>
+            <p class="text-xl md:text-2xl text-gray-300 mb-8 max-w-2xl mx-auto">
+                Founded by Anurag Das. Master Astronomy, Cosmology, and Astrophotography through live interactive
+                classes.
+            </p>
+            <div class="flex flex-col md:flex-row justify-center gap-4">
+                <a href="login.html"
+                    class="bg-gradient-to-r from-indigo-500 to-purple-600 px-8 py-4 rounded-full text-lg font-semibold hover:shadow-xl hover:shadow-indigo-500/50 transition-all transform hover:scale-105">
+                    Start Learning
+                </a>
+                <a href="#courses"
+                    class="border-2 border-indigo-400 px-8 py-4 rounded-full text-lg font-semibold hover:bg-indigo-400 hover:text-gray-900 transition-all">
+                    View Courses
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats -->
+    <section class="py-16 bg-gray-900/50 backdrop-blur-sm">
+        <div class="container mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
+            <div>
+                <div class="text-4xl font-bold text-indigo-400 mb-2">10+</div>
+                <div class="text-gray-300">Live Courses</div>
+            </div>
+            <div>
+                <div class="text-4xl font-bold text-purple-400 mb-2">1000+</div>
+                <div class="text-gray-300">Students</div>
+            </div>
+            <div>
+                <div class="text-4xl font-bold text-pink-400 mb-2">5+</div>
+                <div class="text-gray-300">Books</div>
+            </div>
+            <div>
+                <div class="text-4xl font-bold text-indigo-400 mb-2">24/7</div>
+                <div class="text-gray-300">Support</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Courses Section -->
+    <section id="courses" class="py-20 px-6 bg-gray-900/30">
+        <div class="container mx-auto">
+            <h2 class="text-4xl font-bold text-center mb-4">Courses</h2>
+            <p class="text-center text-gray-300 mb-12">Available Courses by Anurag Das</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="home-courses-container"></div>
+        </div>
+    </section>
+
+    <!-- Books Section on Home Page -->
+    <section id="books" class="py-20 px-6 bg-gray-900/30">
+        <div class="container mx-auto">
+            <h2 class="text-4xl font-bold text-center mb-4">E-Books Library</h2>
+            <p class="text-center text-gray-300 mb-12">Written by Anurag Das</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8" id="books-container">
+                <!-- Books will be dynamically inserted here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- About -->
+    <section id="about" class="py-20 px-6">
+        <div class="container mx-auto max-w-4xl">
+            <div
+                class="bg-gray-800/50 backdrop-blur-md rounded-3xl p-8 md:p-12 border border-indigo-500/20 flex flex-col md:flex-row items-center gap-8">
+                <div class="w-48 h-48 rounded-full bg-gradient-to-br from-indigo-400 to-purple-600 flex items-center justify-center float overflow-hidden"
+                    id="founder-photo-container">
+                    <img id="founder-photo-display" src="" alt="Anurag Das" class="w-full h-full object-cover hidden">
+                    <i data-lucide="user" id="founder-icon-display" class="w-24 h-24 text-white"></i>
+                </div>
+                <div>
+                    <h2 class="text-3xl font-bold mb-4">Meet Anurag Das</h2>
+                    <p class="text-gray-300 mb-4 leading-relaxed">
+                        Founder of AstroMathaino, Anurag Das is a passionate astronomer and educator dedicated to making
+                        the cosmos accessible to everyone.
+                    </p>
+                    <div class="flex gap-4">
+                        <div class="flex items-center gap-2 text-indigo-400"><i data-lucide="award"
+                                class="w-5 h-5"></i><span>Expert Astronomer</span></div>
+                        <div class="flex items-center gap-2 text-purple-400"><i data-lucide="camera"
+                                class="w-5 h-5"></i><span>Astrophotographer</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact -->
+    <section id="contact" class="py-20 px-6 bg-gray-900/30">
+        <div class="container mx-auto max-w-2xl">
+            <h2 class="text-4xl font-bold text-center mb-8">Contact Us</h2>
+            <form id="contact-form"
+                class="space-y-6 bg-gray-800/50 backdrop-blur-md p-8 rounded-2xl border border-indigo-500/20">
+                <input type="text" id="cf-name" placeholder="Your Name" required
+                    class="w-full px-4 py-3 rounded-lg bg-gray-900 border border-gray-700 focus:border-indigo-500 focus:outline-none text-white">
+                <input type="email" id="cf-email" placeholder="Your Email" required
+                    class="w-full px-4 py-3 rounded-lg bg-gray-900 border border-gray-700 focus:border-indigo-500 focus:outline-none text-white">
+                <input type="text" id="cf-subject" placeholder="Subject" required
+                    class="w-full px-4 py-3 rounded-lg bg-gray-900 border border-gray-700 focus:border-indigo-500 focus:outline-none text-white">
+                <textarea id="cf-message" rows="4" placeholder="Your Message" required
+                    class="w-full px-4 py-3 rounded-lg bg-gray-900 border border-gray-700 focus:border-indigo-500 focus:outline-none text-white"></textarea>
+                <button type="submit"
+                    class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 py-3 rounded-lg font-semibold hover:shadow-lg transition-all transform hover:scale-[1.02]">Send
+                    Message</button>
+            </form>
+            <div id="contact-message" class="mt-4 text-center"></div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-950 py-8 px-6 border-t border-indigo-500/20">
+        <div class="container mx-auto flex flex-col md:flex-row justify-between items-center">
+            <div class="flex items-center space-x-3 mb-4 md:mb-0">
+                <i data-lucide="orbit" class="w-6 h-6 text-indigo-400"></i>
+                <span class="font-bold">AstroMathaino</span>
+            </div>
+            <div class="text-gray-500 text-sm">© 2024 Founded by Anurag Das. All rights reserved.</div>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        lucide.createIcons();
+
+        // Load founder photo from Firestore
+        function loadFounderPhoto() {
+            db.collection("settings").doc("founder").get().then(doc => {
+                if (doc.exists && doc.data().photoUrl) {
+                    const img = document.getElementById('founder-photo-display');
+                    img.src = doc.data().photoUrl;
+                    img.classList.remove('hidden');
+                    document.getElementById('founder-icon-display').classList.add('hidden');
+                }
+            }).catch(err => console.log("No founder photo:", err));
+        }
+
+        // Load courses from Firestore
+        function loadCoursesHome() {
+            const container = document.getElementById('home-courses-container');
+            db.collection('courses').onSnapshot(snapshot => {
+                container.innerHTML = '';
+                // BUG 5 FIX: show empty state
+                if (snapshot.empty) {
+                    container.innerHTML = '<p class="text-gray-400 col-span-full text-center py-8">No courses available yet.</p>';
+                    return;
+                }
+                snapshot.forEach(doc => {
+                    const course = doc.data();
+                    container.innerHTML += `
+                        <div class="bg-gray-800/50 rounded-2xl overflow-hidden card-hover border border-indigo-500/20">
+                            <div class="h-40 overflow-hidden bg-gradient-to-br from-indigo-400 to-purple-600 flex items-center justify-center">
+                                <i data-lucide="video" class="w-16 h-16 text-white opacity-50"></i>
+                            </div>
+                            <div class="p-6">
+                                <h3 class="text-xl font-bold mb-2">${course.title || 'Course'}</h3>
+                                <p class="text-gray-300 text-sm mb-4">${course.description || 'No description'}</p>
+                                <button onclick="window.location.href='login.html'" class="bg-indigo-500 hover:bg-indigo-600 px-4 py-2 rounded-lg text-white text-sm">Explore</button>
+                            </div>
+                        </div>
+                    `;
+                });
+                lucide.createIcons();
+            });
+        }
+
+        // BUG 3 FIX: decode URL (was encoded in loadBooksHome to handle special chars)
+        function openBookPreview(encodedUrl) {
+            const pdfUrl = decodeURIComponent(encodedUrl);
+            if (!pdfUrl) { alert('No PDF link available for this book.'); return; }
+            document.getElementById('home-pdf-frame').src = pdfUrl;
+            document.getElementById('home-pdf-download').href = pdfUrl;
+            document.getElementById('home-pdf-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeBookPreview() {
+            document.getElementById('home-pdf-frame').src = '';
+            document.getElementById('home-pdf-modal').classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+
+        // Load books from Firestore
+        function loadBooksHome() {
+            const container = document.getElementById('books-container');
+            db.collection('books').onSnapshot(snapshot => {
+                container.innerHTML = '';
+                if (snapshot.empty) {
+                    container.innerHTML = '<p class="text-gray-400 col-span-full text-center">No books available yet.</p>';
+                    return;
+                }
+                snapshot.forEach(doc => {
+                    const book = doc.data();
+                    // BUG 3 FIX: encode URL so special chars (& ? = in Archive.org URLs) don't break the onclick attribute
+                    const safeUrl = encodeURIComponent(book.pdfUrl || '');
+                    const coverImg = book.cover && book.cover !== '' 
+                        ? `<img src="${book.cover}" alt="${book.title}" class="w-full h-48 object-cover rounded-xl mb-4" onerror="this.style.display='none'">` 
+                        : `<div class="w-full h-48 bg-gradient-to-br from-indigo-600/40 to-purple-700/40 rounded-xl mb-4 flex items-center justify-center"><i data-lucide="book-open" class="w-16 h-16 text-indigo-300 opacity-60"></i></div>`;
+                    container.innerHTML += `
+                        <div class="bg-gray-800/50 rounded-2xl card-hover border border-indigo-500/20 p-6 flex flex-col">
+                            ${coverImg}
+                            <h3 class="text-xl font-bold mb-2">${book.title || 'Book'}</h3>
+                            <p class="text-gray-300 text-sm mb-4 flex-1">${book.description || 'No description'}</p>
+                            <div class="flex gap-2 mt-auto">
+                                <button onclick="openBookPreview('${safeUrl}')" class="flex-1 bg-indigo-500 hover:bg-indigo-600 px-4 py-2 rounded-lg text-white text-sm font-semibold transition-colors flex items-center justify-center gap-2">
+                                    <i data-lucide="eye" class="w-4 h-4"></i> Read
+                                </button>
+                                <a href="${book.pdfUrl || '#'}" target="_blank" class="flex-1 bg-purple-500 hover:bg-purple-600 px-4 py-2 rounded-lg text-white text-sm font-semibold transition-colors flex items-center justify-center gap-2">
+                                    <i data-lucide="download" class="w-4 h-4"></i> Download
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                });
+                lucide.createIcons();
+            });
+        }
+
+        // BUG 2+4 FIX: Use IDs, add subject field, save subject + category to Firestore
+        document.getElementById('contact-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const name = document.getElementById('cf-name').value.trim();
+            const email = document.getElementById('cf-email').value.trim();
+            const subject = document.getElementById('cf-subject').value.trim();
+            const message = document.getElementById('cf-message').value.trim();
+
+            if (!name || !email || !subject || !message) {
+                document.getElementById('contact-message').innerHTML = '<div class="bg-red-500/20 border border-red-500 text-red-400 p-3 rounded-lg">❌ Please fill in all fields</div>';
+                return;
+            }
+
+            db.collection('messages').add({
+                name, email, subject, message,
+                category: 'General',
+                timestamp: new Date().toISOString()
+            }).then(() => {
+                document.getElementById('contact-message').innerHTML = '<div class="bg-green-500/20 border border-green-500 text-green-400 p-3 rounded-lg">✅ Message sent successfully!</div>';
+                e.target.reset();
+                setTimeout(() => { document.getElementById('contact-message').innerHTML = ''; }, 4000);
+            }).catch(() => {
+                document.getElementById('contact-message').innerHTML = '<div class="bg-red-500/20 border border-red-500 text-red-400 p-3 rounded-lg">❌ Error sending message. Please try again.</div>';
+            });
+        });
+
+        // Initialize on load
+        loadFounderPhoto();
+        loadCoursesHome();
+        loadBooksHome();
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeBookPreview();
+        });
+    </script>
+
+    <!-- PDF Preview Modal -->
+    <div id="home-pdf-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex flex-col p-4" onclick="if(event.target===this)closeBookPreview()">
+        <div class="flex justify-between items-center mb-3 max-w-6xl mx-auto w-full">
+            <h3 class="text-white font-bold text-lg flex items-center gap-2">
+                <i data-lucide="book-open" class="w-5 h-5 text-indigo-400"></i> Book Preview
+            </h3>
+            <div class="flex gap-3">
+                <a id="home-pdf-download" href="#" download target="_blank" class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 transition-colors">
+                    <i data-lucide="download" class="w-4 h-4"></i> Download
+                </a>
+                <button onclick="closeBookPreview()" class="bg-red-500/20 hover:bg-red-500/40 text-red-400 px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 transition-colors">
+                    <i data-lucide="x" class="w-4 h-4"></i> Close
+                </button>
+            </div>
+        </div>
+        <div class="flex-1 max-w-6xl mx-auto w-full rounded-xl overflow-hidden border border-indigo-500/30">
+            <iframe id="home-pdf-frame" src="" class="w-full h-full min-h-[70vh] bg-gray-900"></iframe>
+        </div>
+    </div>
+</body>
+
+</html>
