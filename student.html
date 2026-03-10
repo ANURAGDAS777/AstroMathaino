@@ -7,303 +7,290 @@
     <title>Student Portal - AstroMathaino</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap"
-        rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
     <script src="firebase-config.js"></script>
-
     <style>
-        * {
-            font-family: 'Space Grotesk', sans-serif;
-        }
-
-        .cosmic-gradient {
-            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
-        }
-
-        .glass {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .book-card {
-            transition: all 0.3s ease;
-        }
-
-        .book-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.3);
-        }
-
-        .course-card {
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-
-        .course-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.3);
-        }
-
-        .teacher-card {
-            transition: all 0.3s ease;
-        }
-
-        .teacher-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.3);
-        }
-
-        #pdf-modal {
-            transition: opacity 0.3s ease;
-        }
-
-        .alert {
-            padding: 12px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 1rem;
-        }
-
-        .alert-success {
-            background: rgba(34, 197, 94, 0.2);
-            border: 1px solid #22c55e;
-            color: #22c55e;
-        }
-
-        .alert-error {
-            background: rgba(239, 68, 68, 0.2);
-            border: 1px solid #ef4444;
-            color: #ef4444;
-        }
-
-        .profile-avatar {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            font-weight: bold;
+        * { font-family: 'Space Grotesk', sans-serif; }
+        .cosmic-gradient { background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%); }
+        .glass { background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
+        .sidebar { width: 260px; min-height: 100vh; background: rgba(10,8,30,0.98); border-right: 1px solid rgba(99,102,241,0.2); position: fixed; top: 0; left: 0; z-index: 40; display: flex; flex-direction: column; transition: transform 0.3s ease; }
+        .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 39; }
+        .main-content { margin-left: 260px; min-height: 100vh; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 11px 16px; border-radius: 10px; cursor: pointer; transition: all 0.2s ease; color: #9ca3af; font-weight: 500; margin: 2px 8px; font-size: 14px; }
+        .nav-item:hover { background: rgba(99,102,241,0.15); color: #a5b4fc; }
+        .nav-item.active { background: linear-gradient(135deg, rgba(99,102,241,0.3), rgba(139,92,246,0.2)); color: #a5b4fc; border: 1px solid rgba(99,102,241,0.3); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(99,102,241,0.25); }
+        .alert { padding: 12px; border-radius: 8px; display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; }
+        .alert-success { background: rgba(34,197,94,0.2); border: 1px solid #22c55e; color: #22c55e; }
+        .alert-error { background: rgba(239,68,68,0.2); border: 1px solid #ef4444; color: #ef4444; }
+        .profile-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg,#667eea,#764ba2); display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: bold; flex-shrink: 0; }
+        .section-label { font-size: 10px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.1em; padding: 12px 20px 4px; }
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); }
+            .sidebar-overlay.open { display: block; }
+            .main-content { margin-left: 0; }
         }
     </style>
 </head>
 
 <body class="cosmic-gradient min-h-screen text-white">
-    <!-- Navigation -->
-    <nav class="bg-gray-900/80 backdrop-blur-md border-b border-indigo-500/30 sticky top-0 z-50">
-        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <div class="flex items-center space-x-3">
-                <div
-                    class="w-10 h-10 bg-gradient-to-br from-indigo-400 to-purple-600 rounded-full flex items-center justify-center">
-                    <i data-lucide="orbit" class="w-6 h-6 text-white"></i>
+
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="p-5 border-b border-indigo-500/20">
+            <div class="flex items-center gap-3 mb-5">
+                <div class="w-9 h-9 bg-gradient-to-br from-indigo-400 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="orbit" class="w-5 h-5 text-white"></i>
                 </div>
-                <span class="text-xl font-bold">AstroMathaino</span>
+                <span class="font-bold text-base">AstroMathaino</span>
             </div>
-            <div class="flex items-center gap-6">
-                <div class="flex items-center gap-3">
-                    <div class="profile-avatar" id="profile-avatar">👤</div>
-                    <div>
-                        <p class="text-sm text-gray-400">Welcome</p>
-                        <p class="font-semibold" id="student-name">Student</p>
-                    </div>
+            <div class="flex items-center gap-3 bg-white/5 rounded-xl p-3">
+                <div class="profile-avatar" id="profile-avatar">S</div>
+                <div class="overflow-hidden">
+                    <p class="text-xs text-gray-400">Logged in as</p>
+                    <p class="font-semibold text-sm truncate" id="student-name">Student</p>
                 </div>
-                <button onclick="logout()"
-                    class="bg-red-500/20 hover:bg-red-500/30 text-red-400 px-4 py-2 rounded-lg transition-colors flex items-center gap-2">
-                    <i data-lucide="log-out" class="w-4 h-4"></i>
-                    Logout
+            </div>
+        </div>
+
+        <nav class="flex-1 py-3 overflow-y-auto">
+            <p class="section-label">Main</p>
+            <div class="nav-item active" onclick="switchTab('dashboard')" id="nav-dashboard">
+                <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dashboard
+            </div>
+            <div class="nav-item" onclick="switchTab('my-courses')" id="nav-my-courses">
+                <i data-lucide="book-open" class="w-4 h-4"></i> My Courses
+            </div>
+            <div class="nav-item" onclick="switchTab('courses')" id="nav-courses">
+                <i data-lucide="video" class="w-4 h-4"></i> All Courses
+            </div>
+
+            <p class="section-label mt-2">Resources</p>
+            <div class="nav-item" onclick="switchTab('books')" id="nav-books">
+                <i data-lucide="book" class="w-4 h-4"></i> E-Books Library
+            </div>
+            <div class="nav-item" onclick="switchTab('teachers')" id="nav-teachers">
+                <i data-lucide="users" class="w-4 h-4"></i> Instructors
+            </div>
+
+            <p class="section-label mt-2">Account</p>
+            <div class="nav-item" onclick="switchTab('profile')" id="nav-profile">
+                <i data-lucide="user" class="w-4 h-4"></i> My Profile
+            </div>
+            <div class="nav-item" onclick="switchTab('contact')" id="nav-contact">
+                <i data-lucide="message-circle" class="w-4 h-4"></i> Contact Instructor
+            </div>
+        </nav>
+
+        <div class="p-4 border-t border-indigo-500/20">
+            <button onclick="logout()" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-colors font-medium text-sm">
+                <i data-lucide="log-out" class="w-4 h-4"></i> Logout
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main -->
+    <div class="main-content">
+        <!-- Top bar -->
+        <header class="bg-gray-900/80 backdrop-blur-md border-b border-indigo-500/20 sticky top-0 z-30 px-5 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <button onclick="openSidebar()" class="md:hidden p-2 rounded-lg bg-gray-800 text-gray-400">
+                    <i data-lucide="menu" class="w-5 h-5"></i>
                 </button>
+                <h2 class="font-bold" id="page-title">Dashboard</h2>
             </div>
+            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-400 to-purple-600 flex items-center justify-center overflow-hidden border border-indigo-400/40" id="founder-photo-container">
+                <img id="founder-photo-display" src="" alt="" class="w-full h-full object-cover hidden">
+                <i data-lucide="user" id="founder-icon-display" class="w-4 h-4 text-white"></i>
+            </div>
+        </header>
+
+        <div class="p-6">
+
+            <!-- DASHBOARD -->
+            <div id="content-dashboard" class="tab-content active">
+                <div class="glass rounded-2xl p-8 mb-6 relative overflow-hidden">
+                    <div class="relative z-10">
+                        <h1 class="text-3xl font-bold mb-1" id="welcome-text">Welcome back!</h1>
+                        <p class="text-gray-400">Continue your journey through the cosmos.</p>
+                    </div>
+                    <i data-lucide="stars" class="absolute right-8 top-1/2 -translate-y-1/2 w-28 h-28 text-indigo-400/20"></i>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                    <div class="glass rounded-xl p-5 text-center card-hover cursor-pointer" onclick="switchTab('my-courses')">
+                        <i data-lucide="book-open" class="w-7 h-7 text-indigo-400 mx-auto mb-2"></i>
+                        <p class="text-2xl font-bold" id="stat-enrolled">0</p>
+                        <p class="text-xs text-gray-400 mt-1">My Courses</p>
+                    </div>
+                    <div class="glass rounded-xl p-5 text-center card-hover cursor-pointer" onclick="switchTab('courses')">
+                        <i data-lucide="video" class="w-7 h-7 text-purple-400 mx-auto mb-2"></i>
+                        <p class="text-2xl font-bold" id="stat-total-courses">0</p>
+                        <p class="text-xs text-gray-400 mt-1">Total Courses</p>
+                    </div>
+                    <div class="glass rounded-xl p-5 text-center card-hover cursor-pointer" onclick="switchTab('books')">
+                        <i data-lucide="book" class="w-7 h-7 text-pink-400 mx-auto mb-2"></i>
+                        <p class="text-2xl font-bold" id="stat-books">0</p>
+                        <p class="text-xs text-gray-400 mt-1">E-Books</p>
+                    </div>
+                    <div class="glass rounded-xl p-5 text-center card-hover cursor-pointer" onclick="switchTab('teachers')">
+                        <i data-lucide="users" class="w-7 h-7 text-green-400 mx-auto mb-2"></i>
+                        <p class="text-2xl font-bold" id="stat-teachers">0</p>
+                        <p class="text-xs text-gray-400 mt-1">Instructors</p>
+                    </div>
+                </div>
+                <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
+                    <i data-lucide="zap" class="w-5 h-5 text-yellow-400"></i> My Active Courses
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="dashboard-enrolled">
+                    <div class="glass rounded-xl p-8 text-center text-gray-400 col-span-full">
+                        <i data-lucide="library" class="w-10 h-10 mx-auto mb-3 opacity-50"></i>
+                        <p class="mb-2">No courses enrolled yet.</p>
+                        <button onclick="switchTab('courses')" class="text-indigo-400 text-sm hover:underline">Browse Courses →</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MY COURSES -->
+            <div id="content-my-courses" class="tab-content">
+                <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+                    <i data-lucide="book-open" class="w-6 h-6 text-indigo-400"></i> My Enrolled Courses
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="enrolled-courses">
+                    <div class="glass rounded-xl p-8 text-center text-gray-400 col-span-full">
+                        <i data-lucide="library" class="w-12 h-12 mx-auto mb-4 opacity-50"></i>
+                        <p class="mb-2">You haven't enrolled in any courses yet.</p>
+                        <button onclick="switchTab('courses')" class="text-indigo-400 hover:underline text-sm">Browse All Courses →</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ALL COURSES -->
+            <div id="content-courses" class="tab-content">
+                <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+                    <i data-lucide="video" class="w-6 h-6 text-indigo-400"></i> Courses by Anurag Das
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="students-courses-grid">
+                    <div class="glass rounded-xl p-8 text-center text-gray-400 col-span-full">
+                        <i data-lucide="loader" class="w-8 h-8 mx-auto mb-2 animate-spin"></i>
+                        <p>Loading courses...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- E-BOOKS -->
+            <div id="content-books" class="tab-content">
+                <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+                    <i data-lucide="book" class="w-6 h-6 text-pink-400"></i> E-Books Library
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="books-grid">
+                    <div class="glass rounded-xl p-8 text-center text-gray-400 col-span-full">
+                        <i data-lucide="loader" class="w-8 h-8 mx-auto mb-2 animate-spin"></i>
+                        <p>Loading books...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- INSTRUCTORS -->
+            <div id="content-teachers" class="tab-content">
+                <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+                    <i data-lucide="users" class="w-6 h-6 text-indigo-400"></i> Our Instructors
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="teachers-grid">
+                    <div class="glass rounded-xl p-8 text-center text-gray-400 col-span-full">
+                        <i data-lucide="loader" class="w-8 h-8 mx-auto mb-2 animate-spin"></i>
+                        <p>Loading instructors...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PROFILE -->
+            <div id="content-profile" class="tab-content">
+                <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+                    <i data-lucide="user" class="w-6 h-6 text-indigo-400"></i> My Profile
+                </h2>
+                <div class="glass rounded-xl p-6 max-w-2xl">
+                    <form id="student-profile-form" class="space-y-4">
+                        <div id="profile-alert"></div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm mb-2">Full Name</label>
+                                <input id="profile-name" type="text" class="w-full px-4 py-2 rounded-lg bg-gray-900 border border-gray-700 focus:border-indigo-500 focus:outline-none text-white" placeholder="Your name">
+                            </div>
+                            <div>
+                                <label class="block text-sm mb-2">Email</label>
+                                <input id="profile-email" type="email" readonly class="w-full px-4 py-2 rounded-lg bg-gray-900 border border-gray-700 focus:border-indigo-500 focus:outline-none text-white opacity-60">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm mb-2">Age</label>
+                                <input id="profile-age" type="number" class="w-full px-4 py-2 rounded-lg bg-gray-900 border border-gray-700 focus:border-indigo-500 focus:outline-none text-white" placeholder="Your age">
+                            </div>
+                            <div>
+                                <label class="block text-sm mb-2">Phone Number</label>
+                                <input id="profile-phone" type="tel" class="w-full px-4 py-2 rounded-lg bg-gray-900 border border-gray-700 focus:border-indigo-500 focus:outline-none text-white" placeholder="+91 XXXXXXXXXX">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm mb-2">Bio</label>
+                            <textarea id="profile-bio" rows="3" class="w-full px-4 py-2 rounded-lg bg-gray-900 border border-gray-700 focus:border-indigo-500 focus:outline-none text-white" placeholder="Tell us about yourself..."></textarea>
+                        </div>
+                        <button type="submit" class="bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all">
+                            <i data-lucide="save" class="w-4 h-4 inline mr-2"></i> Update Profile
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- CONTACT -->
+            <div id="content-contact" class="tab-content">
+                <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+                    <i data-lucide="message-circle" class="w-6 h-6 text-green-400"></i> Contact Instructor
+                </h2>
+                <div class="glass rounded-xl p-6 max-w-2xl">
+                    <form id="student-contact-form" class="space-y-4">
+                        <div id="contact-alert"></div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Subject</label>
+                                <input type="text" id="contact-subject" required class="w-full px-4 py-2 rounded-lg bg-gray-900 border border-gray-700 focus:border-indigo-500 focus:outline-none text-white" placeholder="Question about...">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Category</label>
+                                <select id="contact-category" class="w-full px-4 py-2 rounded-lg bg-gray-900 border border-gray-700 focus:border-indigo-500 focus:outline-none text-white">
+                                    <option value="Course Related">Course Related</option>
+                                    <option value="Technical Issue">Technical Issue</option>
+                                    <option value="General Question">General Question</option>
+                                    <option value="Feedback">Feedback</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Message</label>
+                            <textarea id="contact-message" required rows="4" class="w-full px-4 py-2 rounded-lg bg-gray-900 border border-gray-700 focus:border-indigo-500 focus:outline-none text-white" placeholder="Your message to Anurag Das..."></textarea>
+                        </div>
+                        <button type="submit" class="bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all">
+                            <i data-lucide="send" class="w-4 h-4 inline mr-2"></i> Send Message
+                        </button>
+                    </form>
+                </div>
+            </div>
+
         </div>
-    </nav>
-
-    <div class="container mx-auto px-6 py-8">
-        <!-- Welcome Banner -->
-        <div class="glass rounded-2xl p-8 mb-8 relative overflow-hidden">
-            <div class="flex items-start justify-between relative z-10">
-                <div>
-                    <h1 class="text-3xl font-bold mb-2" id="welcome-text">Welcome back!</h1>
-                    <p class="text-gray-300">Continue your journey through the cosmos.</p>
-                </div>
-                <div class="w-20 h-20 rounded-full bg-gradient-to-br from-indigo-400 to-purple-600 flex items-center justify-center overflow-hidden border-2 border-indigo-400/50"
-                    id="founder-photo-container">
-                    <img id="founder-photo-display" src="" alt="Anurag Das" class="w-full h-full object-cover hidden">
-                    <i data-lucide="user" id="founder-icon-display" class="w-10 h-10 text-white"></i>
-                </div>
-            </div>
-            <i data-lucide="stars"
-                class="absolute right-8 top-1/2 -translate-y-1/2 w-32 h-32 text-indigo-400/20 -z-0"></i>
-        </div>
-
-        <!-- My Courses Section -->
-        <section class="mb-12">
-            <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
-                <i data-lucide="book-open" class="w-6 h-6 text-indigo-400"></i>
-                My Enrolled Courses
-            </h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="enrolled-courses">
-                <div class="glass rounded-xl p-8 text-center text-gray-400 col-span-full">
-                    <i data-lucide="library" class="w-12 h-12 mx-auto mb-4 opacity-50"></i>
-                    <p>No courses enrolled yet.</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- All Courses Library -->
-        <section class="mb-12">
-            <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
-                <i data-lucide="video" class="w-6 h-6 text-indigo-400"></i>
-                Courses by Anurag Das
-            </h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="students-courses-grid">
-                <div class="glass rounded-xl p-8 text-center text-gray-400 col-span-full">
-                    <i data-lucide="loader" class="w-8 h-8 mx-auto mb-2 animate-spin"></i>
-                    <p>Loading courses...</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Instructors Section -->
-        <section class="mb-12">
-            <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
-                <i data-lucide="users" class="w-6 h-6 text-indigo-400"></i>
-                Our Instructors
-            </h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="teachers-grid">
-                <div class="glass rounded-xl p-8 text-center text-gray-400 col-span-full">
-                    <i data-lucide="loader" class="w-8 h-8 mx-auto mb-2 animate-spin"></i>
-                    <p>Loading instructors...</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- E-Books Library -->
-        <section class="mb-12">
-            <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
-                <i data-lucide="book" class="w-6 h-6 text-pink-400"></i>
-                E-Books Library
-            </h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="books-grid">
-                <div class="glass rounded-xl p-8 text-center text-gray-400 col-span-full">
-                    <i data-lucide="loader" class="w-8 h-8 mx-auto mb-2 animate-spin"></i>
-                    <p>Loading books...</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Student Profile Section -->
-        <section class="mb-12">
-            <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
-                <i data-lucide="user" class="w-6 h-6 text-indigo-400"></i>
-                My Profile
-            </h2>
-            <div class="glass rounded-xl p-6">
-                <form id="student-profile-form" class="space-y-4">
-                    <div id="profile-alert"></div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm mb-2">Full Name</label>
-                            <input id="profile-name" type="text"
-                                class="w-full px-4 py-2 rounded-lg bg-gray-900 border border-gray-700 focus:border-indigo-500 focus:outline-none text-white"
-                                placeholder="Your name">
-                        </div>
-                        <div>
-                            <label class="block text-sm mb-2">Email</label>
-                            <input id="profile-email" type="email"
-                                class="w-full px-4 py-2 rounded-lg bg-gray-900 border border-gray-700 focus:border-indigo-500 focus:outline-none text-white"
-                                placeholder="your@email.com" readonly>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm mb-2">Age</label>
-                            <input id="profile-age" type="number"
-                                class="w-full px-4 py-2 rounded-lg bg-gray-900 border border-gray-700 focus:border-indigo-500 focus:outline-none text-white"
-                                placeholder="Your age">
-                        </div>
-                        <div>
-                            <label class="block text-sm mb-2">Phone Number</label>
-                            <input id="profile-phone" type="tel"
-                                class="w-full px-4 py-2 rounded-lg bg-gray-900 border border-gray-700 focus:border-indigo-500 focus:outline-none text-white"
-                                placeholder="+91 XXXXXXXXXX">
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm mb-2">Bio</label>
-                        <textarea id="profile-bio" rows="3"
-                            class="w-full px-4 py-2 rounded-lg bg-gray-900 border border-gray-700 focus:border-indigo-500 focus:outline-none text-white"
-                            placeholder="Tell us about yourself..."></textarea>
-                    </div>
-
-                    <button type="submit"
-                        class="bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all transform hover:scale-[1.02]">
-                        <i data-lucide="save" class="w-4 h-4 inline mr-2"></i>
-                        Update Profile
-                    </button>
-                </form>
-            </div>
-        </section>
-
-        <!-- Contact Instructor Section -->
-        <section class="mb-12">
-            <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
-                <i data-lucide="message-circle" class="w-6 h-6 text-green-400"></i>
-                Contact Instructor
-            </h2>
-            <div class="glass rounded-xl p-6">
-                <form id="student-contact-form" class="space-y-4">
-                    <div id="contact-alert"></div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium mb-2">Subject</label>
-                            <input type="text" id="contact-subject" required
-                                class="w-full px-4 py-2 rounded-lg bg-gray-900 border border-gray-700 focus:border-indigo-500 focus:outline-none text-white"
-                                placeholder="Question about...">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium mb-2">Category</label>
-                            <select id="contact-category"
-                                class="w-full px-4 py-2 rounded-lg bg-gray-900 border border-gray-700 focus:border-indigo-500 focus:outline-none text-white">
-                                <option value="Course Related">Course Related</option>
-                                <option value="Technical Issue">Technical Issue</option>
-                                <option value="General Question">General Question</option>
-                                <option value="Feedback">Feedback</option>
-                                <option value="Other">Other</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Message</label>
-                        <textarea id="contact-message" required rows="4"
-                            class="w-full px-4 py-2 rounded-lg bg-gray-900 border border-gray-700 focus:border-indigo-500 focus:outline-none text-white"
-                            placeholder="Your message to Anurag Das..."></textarea>
-                    </div>
-
-                    <button type="submit"
-                        class="bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all transform hover:scale-[1.02]">
-                        <i data-lucide="send" class="w-4 h-4 inline mr-2"></i>
-                        Send Message
-                    </button>
-                </form>
-            </div>
-        </section>
     </div>
 
-    <!-- PDF Preview Modal -->
+    <!-- PDF Modal -->
     <div id="pdf-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center hidden z-50 p-4" onclick="if(event.target===this)closePdfModal()">
         <div class="bg-gray-900 rounded-xl w-11/12 md:w-4/5 h-4/5 relative flex flex-col border border-indigo-500/30">
             <div class="flex justify-between items-center p-3 border-b border-gray-700">
@@ -314,7 +301,7 @@
                     <a id="student-pdf-download" href="#" download target="_blank" class="bg-purple-500 hover:bg-purple-600 text-white px-3 py-1.5 rounded-lg text-sm font-semibold flex items-center gap-1 transition-colors">
                         <i data-lucide="download" class="w-3 h-3"></i> Download
                     </a>
-                    <button onclick="closePdfModal()" class="bg-red-500/20 hover:bg-red-500/40 text-red-400 px-3 py-1.5 rounded-lg text-sm font-semibold flex items-center gap-1 transition-colors">
+                    <button onclick="closePdfModal()" class="bg-red-500/20 hover:bg-red-500/40 text-red-400 px-3 py-1.5 rounded-lg text-sm flex items-center gap-1 transition-colors">
                         <i data-lucide="x" class="w-3 h-3"></i> Close
                     </button>
                 </div>
@@ -323,49 +310,53 @@
         </div>
     </div>
 
-    <script src="https://unpkg.com/lucide@latest"></script>
     <script>
         lucide.createIcons();
 
-        // ============ State Management ============
         let currentUser = null;
         let enrolledCourses = [];
 
-        // ============ Authentication Check ============
+        function openSidebar() {
+            document.getElementById('sidebar').classList.add('open');
+            document.getElementById('sidebar-overlay').classList.add('open');
+        }
+        function closeSidebar() {
+            document.getElementById('sidebar').classList.remove('open');
+            document.getElementById('sidebar-overlay').classList.remove('open');
+        }
+
+        const tabTitles = {
+            dashboard: 'Dashboard', 'my-courses': 'My Courses', courses: 'All Courses',
+            books: 'E-Books Library', teachers: 'Instructors', profile: 'My Profile', contact: 'Contact Instructor'
+        };
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.getElementById('content-' + tab).classList.add('active');
+            document.getElementById('nav-' + tab).classList.add('active');
+            document.getElementById('page-title').textContent = tabTitles[tab] || tab;
+            closeSidebar();
+        }
+
         function initAuth() {
             const user = localStorage.getItem('astro_user');
-            if (!user) {
-                window.location.href = 'login.html';
-                return;
-            }
-
+            if (!user) { window.location.href = 'login.html'; return; }
             currentUser = JSON.parse(user);
-            
-            if (currentUser.type !== 'student') {
-                window.location.href = 'login.html';
-                return;
-            }
-
+            if (currentUser.type !== 'student') { window.location.href = 'login.html'; return; }
             updateUserUI();
         }
 
         function updateUserUI() {
-            document.getElementById('student-name').textContent = currentUser.name || 'Student';
-            document.getElementById('welcome-text').textContent = `Welcome back, ${currentUser.name}!`;
+            const name = currentUser.name || 'Student';
+            document.getElementById('student-name').textContent = name;
+            document.getElementById('welcome-text').textContent = `Welcome back, ${name}!`;
             document.getElementById('profile-email').value = currentUser.email;
-            document.getElementById('profile-name').value = currentUser.name;
-
-            // Generate avatar initials
-            const initials = currentUser.name
-                .split(' ')
-                .map(n => n[0])
-                .join('')
-                .toUpperCase()
-                .slice(0, 2);
+            document.getElementById('profile-name').value = name;
+            const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
             document.getElementById('profile-avatar').textContent = initials;
         }
 
-        // ============ Logout ============
         function logout() {
             if (confirm('Are you sure you want to logout?')) {
                 localStorage.removeItem('astro_user');
@@ -373,242 +364,183 @@
             }
         }
 
-        // ============ Load Founder Photo ============
         function loadFounderPhoto() {
-            db.collection("settings").doc("founder").get().then(doc => {
+            db.collection('settings').doc('founder').get().then(doc => {
                 if (doc.exists && doc.data().photoUrl) {
                     const img = document.getElementById('founder-photo-display');
                     img.src = doc.data().photoUrl;
                     img.classList.remove('hidden');
                     document.getElementById('founder-icon-display').classList.add('hidden');
                 }
-            }).catch(err => console.log("No founder photo"));
+            }).catch(() => {});
         }
 
-        // ============ Load Courses ============
+        function loadStats() {
+            db.collection('courses').get().then(s => { document.getElementById('stat-total-courses').textContent = s.size; });
+            db.collection('books').get().then(s => { document.getElementById('stat-books').textContent = s.size; });
+            db.collection('teachers').get().then(s => { document.getElementById('stat-teachers').textContent = s.size; });
+        }
+
         function loadCourses() {
             const container = document.getElementById('students-courses-grid');
-            
             db.collection('courses').onSnapshot(snapshot => {
                 if (snapshot.empty) {
-                    container.innerHTML = `
-                        <div class="glass rounded-xl p-8 text-center text-gray-400 col-span-full">
-                            <i data-lucide="inbox" class="w-12 h-12 mx-auto mb-4 opacity-50"></i>
-                            <p>No courses available at the moment.</p>
-                        </div>
-                    `;
-                    return;
+                    container.innerHTML = `<div class="glass rounded-xl p-8 text-center text-gray-400 col-span-full"><i data-lucide="inbox" class="w-12 h-12 mx-auto mb-4 opacity-50"></i><p>No courses available.</p></div>`;
+                    lucide.createIcons(); return;
                 }
-
                 container.innerHTML = '';
                 snapshot.forEach(doc => {
-                    const course = doc.data();
+                    const c = doc.data();
                     const isEnrolled = enrolledCourses.includes(doc.id);
-
                     container.innerHTML += `
-                        <div class="glass rounded-xl overflow-hidden course-card border border-indigo-500/20">
-                            <div class="h-40 overflow-hidden bg-gradient-to-br from-indigo-400 to-purple-600 flex items-center justify-center">
-                                <i data-lucide="video" class="w-16 h-16 text-white opacity-50"></i>
+                        <div class="glass rounded-xl overflow-hidden card-hover border border-indigo-500/20">
+                            <div class="h-40 bg-gradient-to-br from-indigo-400 to-purple-600 flex items-center justify-center">
+                                <i data-lucide="video" class="w-14 h-14 text-white opacity-40"></i>
                             </div>
                             <div class="p-6">
-                                <h3 class="text-lg font-bold mb-2">${course.title || 'Course'}</h3>
-                                <p class="text-gray-300 text-sm mb-2"><strong>Category:</strong> ${course.category || 'N/A'}</p>
-                                <p class="text-gray-400 text-sm mb-4 line-clamp-2">${course.description || 'No description'}</p>
-                                
-                                ${isEnrolled ? `
-                                    <button onclick="joinLiveClass('${doc.id}')" class="w-full bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg text-white font-semibold transition-colors">
-                                        <i data-lucide="play" class="w-4 h-4 inline mr-2"></i>
-                                        Join Live Class
-                                    </button>
-                                ` : `
-                                    <button onclick="enrollCourse('${doc.id}')" class="w-full bg-indigo-500 hover:bg-indigo-600 px-4 py-2 rounded-lg text-white font-semibold transition-colors">
-                                        <i data-lucide="check" class="w-4 h-4 inline mr-2"></i>
-                                        Enroll Now
-                                    </button>
-                                `}
+                                <h3 class="text-lg font-bold mb-1">${c.title || 'Course'}</h3>
+                                <p class="text-gray-300 text-sm mb-1"><strong>Category:</strong> ${c.category || 'N/A'}</p>
+                                <p class="text-gray-400 text-sm mb-4 line-clamp-2">${c.description || ''}</p>
+                                ${isEnrolled
+                                    ? `<button onclick="joinLiveClass('${doc.id}')" class="w-full bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg text-white font-semibold transition-colors text-sm"><i data-lucide="play" class="w-4 h-4 inline mr-1"></i>Join Live Class</button>`
+                                    : `<button onclick="enrollCourse('${doc.id}')" class="w-full bg-indigo-500 hover:bg-indigo-600 px-4 py-2 rounded-lg text-white font-semibold transition-colors text-sm"><i data-lucide="plus-circle" class="w-4 h-4 inline mr-1"></i>Enroll Now</button>`
+                                }
                             </div>
-                        </div>
-                    `;
+                        </div>`;
                 });
                 lucide.createIcons();
             });
         }
 
-        // ============ Enroll in Course ============
         function enrollCourse(courseId) {
             db.collection('students').doc(currentUser.email).update({
                 enrolledCourses: firebase.firestore.FieldValue.arrayUnion(courseId)
             }).then(() => {
-                // BUG 18 FIX: reload enrolled first, then reload all courses so button states are correct
                 loadEnrolledCourses(() => loadCourses());
-                showAlert('profile-alert', 'Successfully enrolled in course!', 'success');
+                showAlert('profile-alert', 'Successfully enrolled!', 'success');
             }).catch(err => {
-                showAlert('profile-alert', 'Failed to enroll: ' + err.message, 'error');
+                alert('Failed to enroll: ' + err.message);
             });
         }
 
-        // ============ Load Enrolled Courses ============
-        // BUG 18 FIX: accepts optional callback so caller can wait for enrolledCourses[] to be populated
         function loadEnrolledCourses(callback) {
             const container = document.getElementById('enrolled-courses');
-            
-            db.collection('students').doc(currentUser.email).get().then(doc => {
-                if (doc.exists && doc.data().enrolledCourses) {
-                    enrolledCourses = doc.data().enrolledCourses;
-                } else {
-                    enrolledCourses = [];
-                }
+            const dashContainer = document.getElementById('dashboard-enrolled');
 
-                // Run callback (e.g. loadCourses) AFTER enrolledCourses is populated
+            db.collection('students').doc(currentUser.email).get().then(doc => {
+                enrolledCourses = (doc.exists && doc.data().enrolledCourses) ? doc.data().enrolledCourses : [];
+                document.getElementById('stat-enrolled').textContent = enrolledCourses.length;
+
                 if (callback) callback();
 
+                const emptyHtml = `<div class="glass rounded-xl p-8 text-center text-gray-400 col-span-full"><i data-lucide="library" class="w-12 h-12 mx-auto mb-4 opacity-50"></i><p class="mb-2">No courses enrolled yet.</p><button onclick="switchTab('courses')" class="text-indigo-400 hover:underline text-sm">Browse All Courses →</button></div>`;
+
                 if (enrolledCourses.length === 0) {
-                    container.innerHTML = `
-                        <div class="glass rounded-xl p-8 text-center text-gray-400 col-span-full">
-                            <i data-lucide="library" class="w-12 h-12 mx-auto mb-4 opacity-50"></i>
-                            <p>You haven't enrolled in any courses yet. Browse courses below to get started!</p>
-                        </div>
-                    `;
-                    lucide.createIcons();
-                    return;
+                    container.innerHTML = emptyHtml;
+                    dashContainer.innerHTML = emptyHtml;
+                    lucide.createIcons(); return;
                 }
 
                 container.innerHTML = '';
+                dashContainer.innerHTML = '';
                 enrolledCourses.forEach(courseId => {
                     db.collection('courses').doc(courseId).get().then(courseDoc => {
-                        if (courseDoc.exists) {
-                            const course = courseDoc.data();
-                            container.innerHTML += `
-                                <div class="glass rounded-xl overflow-hidden course-card border border-green-500/20">
-                                    <div class="h-40 overflow-hidden bg-gradient-to-br from-green-400 to-blue-600 flex items-center justify-center">
-                                        <i data-lucide="check-circle" class="w-16 h-16 text-white opacity-50"></i>
-                                    </div>
-                                    <div class="p-6">
-                                        <h3 class="text-lg font-bold mb-2">${course.title || 'Course'}</h3>
-                                        <p class="text-gray-300 text-sm mb-4">${course.description || 'No description'}</p>
-                                        
-                                        <button onclick="joinLiveClass('${courseId}')" class="w-full bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg text-white font-semibold transition-colors">
-                                            <i data-lucide="video" class="w-4 h-4 inline mr-2"></i>
-                                            Join Live Class
-                                        </button>
-                                    </div>
+                        if (!courseDoc.exists) return;
+                        const c = courseDoc.data();
+                        const card = `
+                            <div class="glass rounded-xl overflow-hidden card-hover border border-green-500/20">
+                                <div class="h-40 bg-gradient-to-br from-green-400 to-blue-600 flex items-center justify-center">
+                                    <i data-lucide="check-circle" class="w-14 h-14 text-white opacity-40"></i>
                                 </div>
-                            `;
-                            lucide.createIcons();
-                        }
+                                <div class="p-6">
+                                    <h3 class="text-lg font-bold mb-1">${c.title || 'Course'}</h3>
+                                    <p class="text-gray-400 text-sm mb-4 line-clamp-2">${c.description || ''}</p>
+                                    <button onclick="joinLiveClass('${courseId}')" class="w-full bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg text-white font-semibold transition-colors text-sm">
+                                        <i data-lucide="video" class="w-4 h-4 inline mr-1"></i>Join Live Class
+                                    </button>
+                                </div>
+                            </div>`;
+                        container.innerHTML += card;
+                        dashContainer.innerHTML += card;
+                        lucide.createIcons();
                     });
                 });
             });
         }
 
-        // ============ Join Live Class ============
         function joinLiveClass(courseId) {
             window.location.href = `live-class.html?course=${courseId}`;
         }
 
-        // ============ Load Teachers ============
         function loadTeachers() {
             const container = document.getElementById('teachers-grid');
-            
             db.collection('teachers').onSnapshot(snapshot => {
                 if (snapshot.empty) {
-                    container.innerHTML = `
-                        <div class="glass rounded-xl p-8 text-center text-gray-400 col-span-full">
-                            <i data-lucide="users" class="w-12 h-12 mx-auto mb-4 opacity-50"></i>
-                            <p>No teachers available.</p>
-                        </div>
-                    `;
-                    return;
+                    container.innerHTML = `<div class="glass rounded-xl p-8 text-center text-gray-400 col-span-full"><i data-lucide="users" class="w-12 h-12 mx-auto mb-4 opacity-50"></i><p>No teachers available.</p></div>`;
+                    lucide.createIcons(); return;
                 }
-
                 container.innerHTML = '';
                 snapshot.forEach(doc => {
-                    const teacher = doc.data();
+                    const t = doc.data();
                     container.innerHTML += `
-                        <div class="glass rounded-xl overflow-hidden teacher-card border border-indigo-500/20">
-                            <div class="h-48 overflow-hidden bg-gray-800 relative">
-                                ${teacher.photo ? `
-                                    <img src="${teacher.photo}" alt="${teacher.name}" class="w-full h-full object-cover">
-                                ` : `
-                                    <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-400 to-purple-600">
-                                        <i data-lucide="user" class="w-16 h-16 text-white opacity-50"></i>
-                                    </div>
-                                `}
-                                <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/40 to-transparent"></div>
+                        <div class="glass rounded-xl overflow-hidden card-hover border border-indigo-500/20">
+                            <div class="h-48 bg-gray-800 relative">
+                                ${t.photo ? `<img src="${t.photo}" alt="${t.name}" class="w-full h-full object-cover">` : `<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-400 to-purple-600"><i data-lucide="user" class="w-14 h-14 text-white opacity-40"></i></div>`}
+                                <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/30 to-transparent"></div>
                                 <div class="absolute bottom-4 left-4 right-4">
-                                    <h3 class="font-bold text-xl text-white mb-1">${teacher.name || 'Teacher'}</h3>
-                                    <p class="text-indigo-400 text-sm">${teacher.field || 'Astronomy'}</p>
+                                    <h3 class="font-bold text-lg text-white">${t.name || 'Teacher'}</h3>
+                                    <p class="text-indigo-400 text-sm">${t.field || ''}</p>
                                 </div>
                             </div>
                             <div class="p-5">
-                                <div class="flex items-center gap-2 text-gray-300 text-sm mb-3">
+                                <div class="flex items-center gap-2 text-gray-300 text-sm mb-2">
                                     <i data-lucide="graduation-cap" class="w-4 h-4 text-indigo-400"></i>
-                                    <span class="line-clamp-1">${teacher.education || 'Education'}</span>
+                                    <span class="line-clamp-1">${t.education || ''}</span>
                                 </div>
-                                <p class="text-gray-400 text-sm line-clamp-3">${teacher.bio || 'No bio available'}</p>
+                                <p class="text-gray-400 text-sm line-clamp-3">${t.bio || 'No bio available'}</p>
                             </div>
-                        </div>
-                    `;
+                        </div>`;
                 });
                 lucide.createIcons();
             });
         }
 
-        // ============ Load Books ============
         function loadBooks() {
             const container = document.getElementById('books-grid');
-            
-            db.collection('books').orderBy('uploadDate', 'desc').onSnapshot(snapshot => {
+            db.collection('books').onSnapshot(snapshot => {
                 if (snapshot.empty) {
-                    container.innerHTML = `
-                        <div class="glass rounded-xl p-8 text-center text-gray-400 col-span-full">
-                            <i data-lucide="book" class="w-12 h-12 mx-auto mb-4 opacity-50"></i>
-                            <p>No books available at the moment.</p>
-                        </div>
-                    `;
-                    return;
+                    container.innerHTML = `<div class="glass rounded-xl p-8 text-center text-gray-400 col-span-full"><i data-lucide="book" class="w-12 h-12 mx-auto mb-4 opacity-50"></i><p>No books available.</p></div>`;
+                    lucide.createIcons(); return;
                 }
-
                 container.innerHTML = '';
                 snapshot.forEach(doc => {
                     const book = doc.data();
-                    // BUG 17 FIX: encode pdfUrl so Archive.org URLs with special chars don't break onclick
                     const safeUrl = encodeURIComponent(book.pdfUrl || '');
-                    const coverHtml = book.cover && book.cover !== ''
+                    const coverHtml = book.cover
                         ? `<img src="${book.cover}" alt="${book.title}" class="w-full h-44 object-cover rounded-xl mb-4" onerror="this.style.display='none'">`
                         : `<div class="w-full h-44 bg-gradient-to-br from-indigo-600/30 to-purple-700/30 rounded-xl mb-4 flex items-center justify-center"><i data-lucide="book-open" class="w-12 h-12 text-indigo-300 opacity-60"></i></div>`;
                     container.innerHTML += `
-                        <div class="glass rounded-xl p-6 book-card border border-indigo-500/20 flex flex-col">
+                        <div class="glass rounded-xl p-6 card-hover border border-indigo-500/20 flex flex-col">
                             ${coverHtml}
                             <h3 class="text-lg font-bold mb-2">${book.title || 'Book'}</h3>
-                            <p class="text-gray-400 text-sm mb-4 line-clamp-2 flex-1">${book.description || 'No description'}</p>
-                            
+                            <p class="text-gray-400 text-sm mb-4 line-clamp-2 flex-1">${book.description || ''}</p>
                             <div class="flex gap-2 mt-auto">
                                 <button onclick="previewBook('${safeUrl}')" class="flex-1 bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-400 px-3 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2">
-                                    <i data-lucide="eye" class="w-4 h-4"></i>
-                                    <span class="hidden sm:inline">Preview</span>
+                                    <i data-lucide="eye" class="w-4 h-4"></i> Preview
                                 </button>
-                                <a href="${book.pdfUrl || '#'}" target="_blank" class="flex-1 bg-gradient-to-r from-indigo-500 to-purple-600 hover:shadow-lg px-3 py-2 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2 text-white">
-                                    <i data-lucide="download" class="w-4 h-4"></i>
-                                    <span class="hidden sm:inline">Download</span>
+                                <a href="${book.pdfUrl || '#'}" target="_blank" class="flex-1 bg-gradient-to-r from-indigo-500 to-purple-600 px-3 py-2 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2 text-white">
+                                    <i data-lucide="download" class="w-4 h-4"></i> Download
                                 </a>
                             </div>
-                        </div>
-                    `;
+                        </div>`;
                 });
                 lucide.createIcons();
             });
         }
 
-        // ============ PDF Preview ============
-        // BUG 17 FIX: decode URL that was encoded in loadBooks onclick
         function previewBook(encodedUrl) {
             const pdfUrl = decodeURIComponent(encodedUrl);
-            if (!pdfUrl) {
-                // BUG 21 FIX: show error as a visible toast, not in the hidden contact-alert container
-                showToast('PDF not available for this book.', 'error');
-                return;
-            }
+            if (!pdfUrl) { showToast('PDF not available.', 'error'); return; }
             document.getElementById('pdf-frame').src = pdfUrl;
             document.getElementById('student-pdf-download').href = pdfUrl;
             document.getElementById('pdf-modal').classList.remove('hidden');
@@ -621,108 +553,61 @@
             document.body.style.overflow = '';
         }
 
-        // BUG 19 FIX: Escape key closes PDF modal
         document.addEventListener('keydown', e => { if (e.key === 'Escape') closePdfModal(); });
 
-        // BUG 21 helper: floating toast visible anywhere on page
         function showToast(message, type = 'error') {
-            const toast = document.createElement('div');
-            toast.style.cssText = `position:fixed;top:20px;right:20px;z-index:9999;padding:12px 20px;border-radius:8px;font-weight:600;animation:fadeIn 0.3s ease;${type === 'error' ? 'background:rgba(239,68,68,0.9);color:white;' : 'background:rgba(34,197,94,0.9);color:white;'}`;
-            toast.textContent = message;
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
+            const t = document.createElement('div');
+            t.style.cssText = `position:fixed;top:20px;right:20px;z-index:9999;padding:12px 20px;border-radius:8px;font-weight:600;${type==='error'?'background:rgba(239,68,68,0.9);':'background:rgba(34,197,94,0.9);'}color:white;`;
+            t.textContent = message;
+            document.body.appendChild(t);
+            setTimeout(() => t.remove(), 3000);
         }
 
-        // ============ Profile Management ============
         document.getElementById('student-profile-form').addEventListener('submit', function(e) {
             e.preventDefault();
-            const profileAlert = document.getElementById('profile-alert');
-            profileAlert.innerHTML = '';
-
             const name = document.getElementById('profile-name').value.trim();
-            const age = document.getElementById('profile-age').value;
-            const phone = document.getElementById('profile-phone').value.trim();
-            const bio = document.getElementById('profile-bio').value.trim();
-
-            if (!name) {
-                showAlert('profile-alert', 'Name is required', 'error');
-                return;
-            }
-
+            if (!name) { showAlert('profile-alert', 'Name is required', 'error'); return; }
             db.collection('students').doc(currentUser.email).update({
-                name: name,
-                age: age || null,
-                phone: phone || null,
-                bio: bio || null,
+                name, age: document.getElementById('profile-age').value || null,
+                phone: document.getElementById('profile-phone').value.trim() || null,
+                bio: document.getElementById('profile-bio').value.trim() || null,
                 updatedAt: new Date().toISOString()
             }).then(() => {
-                currentUser.name = name;
-                updateUserUI();
-                showAlert('profile-alert', 'Profile updated successfully!', 'success');
-            }).catch(err => {
-                showAlert('profile-alert', 'Error updating profile: ' + err.message, 'error');
-            });
+                currentUser.name = name; updateUserUI();
+                showAlert('profile-alert', 'Profile updated!', 'success');
+            }).catch(err => showAlert('profile-alert', 'Error: ' + err.message, 'error'));
         });
 
-        // ============ Contact Form ============
         document.getElementById('student-contact-form').addEventListener('submit', function(e) {
             e.preventDefault();
-            const contactAlert = document.getElementById('contact-alert');
-            contactAlert.innerHTML = '';
-
             const subject = document.getElementById('contact-subject').value.trim();
             const category = document.getElementById('contact-category').value;
             const message = document.getElementById('contact-message').value.trim();
-
-            if (!subject || !message) {
-                showAlert('contact-alert', 'Subject and message are required', 'error');
-                return;
-            }
-
+            if (!subject || !message) { showAlert('contact-alert', 'Subject and message are required', 'error'); return; }
             db.collection('messages').add({
-                name: currentUser.name,
-                email: currentUser.email,
-                subject: subject,
-                category: category,
-                message: message,
-                timestamp: new Date().toISOString()
+                name: currentUser.name, email: currentUser.email,
+                subject, category, message, timestamp: new Date().toISOString()
             }).then(() => {
-                showAlert('contact-alert', 'Message sent successfully!', 'success');
+                showAlert('contact-alert', 'Message sent!', 'success');
                 document.getElementById('student-contact-form').reset();
-            }).catch(err => {
-                showAlert('contact-alert', 'Error sending message: ' + err.message, 'error');
-            });
+            }).catch(err => showAlert('contact-alert', 'Error: ' + err.message, 'error'));
         });
 
-        // ============ Alert Helper ============
         function showAlert(containerId, message, type = 'error') {
             const container = document.getElementById(containerId);
-            container.innerHTML = `
-                <div class="alert alert-${type}">
-                    <i data-lucide="${type === 'success' ? 'check-circle' : 'alert-circle'}" class="w-4 h-4"></i>
-                    <span>${message}</span>
-                </div>
-            `;
+            container.innerHTML = `<div class="alert alert-${type}"><i data-lucide="${type==='success'?'check-circle':'alert-circle'}" class="w-4 h-4"></i><span>${message}</span></div>`;
             lucide.createIcons();
-
-            if (type === 'success') {
-                setTimeout(() => {
-                    container.innerHTML = '';
-                }, 3000);
-            }
+            if (type === 'success') setTimeout(() => { container.innerHTML = ''; }, 3000);
         }
 
-        // ============ Initialize ============
-        // BUG 18 FIX: loadEnrolledCourses FIRST with callback → then loadCourses
-        // Previously loadCourses ran before enrolledCourses[] was populated → all showed "Enroll Now"
         document.addEventListener('DOMContentLoaded', function() {
             initAuth();
             loadFounderPhoto();
+            loadStats();
             loadEnrolledCourses(() => loadCourses());
             loadTeachers();
             loadBooks();
         });
     </script>
 </body>
-
 </html>
