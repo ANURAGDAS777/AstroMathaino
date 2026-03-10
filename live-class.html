@@ -94,13 +94,7 @@
                         Class Materials
                     </h3>
                     <div class="space-y-3" id="class-materials">
-                        <div class="flex items-center gap-3 p-3 bg-gray-800/30 rounded-lg">
-                            <i data-lucide="file-text" class="w-5 h-5 text-gray-400"></i>
-                            <div>
-                                <p class="font-medium">Course Syllabus</p>
-                                <p class="text-sm text-gray-400">Available for download</p>
-                            </div>
-                        </div>
+                        <p class="text-gray-400 text-sm text-center py-4">Loading materials...</p>
                     </div>
                 </div>
             </div>
@@ -178,6 +172,8 @@
                     if (currentCourse.liveUrl) {
                         document.getElementById('zoom-link-display').innerHTML = `<strong>Meeting Link:</strong> <a href="${currentCourse.liveUrl}" target="_blank" class="underline">${currentCourse.liveUrl}</a>`;
                     }
+                    // Load class materials dynamically
+                    loadMaterials(currentCourse.materials || '');
                 }
             });
         }
@@ -193,6 +189,46 @@
 
         function shareScreen() {
             alert('Screen sharing feature coming soon!');
+        }
+
+        // Load class materials from course.materials field
+        function loadMaterials(materialsText) {
+            const container = document.getElementById('class-materials');
+            if (!materialsText || !materialsText.trim()) {
+                container.innerHTML = '<p class="text-gray-400 text-sm text-center py-4">No materials uploaded yet.</p>';
+                return;
+            }
+
+            const lines = materialsText.trim().split('\n').filter(l => l.trim());
+            container.innerHTML = '';
+            lines.forEach((line, i) => {
+                const parts = line.split('|');
+                const url = parts[0].trim();
+                const label = parts[1] ? parts[1].trim() : `Material ${i + 1}`;
+                if (!url) return;
+
+                // Detect file type for icon
+                const isPdf = url.toLowerCase().includes('.pdf') || url.toLowerCase().includes('pdf');
+                const isVideo = url.toLowerCase().includes('youtube') || url.toLowerCase().includes('youtu.be') || url.toLowerCase().includes('drive');
+                const icon = isPdf ? 'file-text' : isVideo ? 'play-circle' : 'link';
+                const iconColor = isPdf ? 'text-red-400' : isVideo ? 'text-green-400' : 'text-indigo-400';
+                const bgColor = isPdf ? 'bg-red-500/20' : isVideo ? 'bg-green-500/20' : 'bg-indigo-500/20';
+
+                container.innerHTML += `
+                    <div class="flex items-center justify-between gap-3 p-3 bg-gray-800/30 hover:bg-gray-800/50 rounded-lg transition-colors">
+                        <div class="flex items-center gap-3 overflow-hidden">
+                            <div class="w-9 h-9 ${bgColor} rounded-lg flex items-center justify-center flex-shrink-0">
+                                <i data-lucide="${icon}" class="w-4 h-4 ${iconColor}"></i>
+                            </div>
+                            <p class="font-medium text-sm truncate">${label}</p>
+                        </div>
+                        <a href="${url}" target="_blank"
+                           class="flex-shrink-0 bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 transition-colors">
+                            <i data-lucide="download" class="w-3 h-3"></i> Open
+                        </a>
+                    </div>`;
+            });
+            lucide.createIcons();
         }
 
         // BUG 22 FIX: use onSnapshot only — called once, realtime updates automatically.
