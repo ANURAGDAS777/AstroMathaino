@@ -772,7 +772,7 @@
                 document.getElementById('stat-books').textContent = snap.size;
             });
 
-            db.collection('messages').orderBy('timestamp', 'desc').limit(5).get().then(snap => {
+            db.collection('messages').get().then(snap => {
                 const container = document.getElementById('dashboard-messages');
                 if (snap.empty) {
                     container.innerHTML = '<p class="text-gray-400">No messages yet</p>';
@@ -1157,15 +1157,17 @@
         });
 
         // ============ Students Management ============
+        let studentsUnsubscribe = null;
         function loadStudents() {
             const tbody = document.getElementById('students-table-body');
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-gray-400">Loading...</td></tr>';
 
-            // BUG 7 FIX: login.html saves 'created_at' (underscore), not 'createdAt'.
-            // orderBy('createdAt') would cause a Firestore missing-index error → students tab shows nothing.
-            // Solution: remove orderBy, handle both field name variants.
-            db.collection('students').onSnapshot(snap => {
+            // Unsubscribe previous listener to avoid stacking
+            if (studentsUnsubscribe) { studentsUnsubscribe(); studentsUnsubscribe = null; }
+
+            studentsUnsubscribe = db.collection('students').onSnapshot(snap => {
                 if (snap.empty) {
-                    tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-gray-400">No students registered</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-gray-400">No students registered yet</td></tr>';
                     return;
                 }
 
@@ -1180,7 +1182,7 @@
                             <td><strong>${student.name || 'N/A'}</strong></td>
                             <td>${student.email || doc.id}</td>
                             <td>${joinDate}</td>
-                            <td><span class="badge badge-primary">${student.enrolledCourses?.length || 0}</span></td>
+                            <td><span class="badge badge-primary">${(student.enrolledCourses || []).length}</span></td>
                             <td>
                                 <button onclick="deleteStudent('${doc.id}')" class="text-red-400 hover:text-red-300 text-sm">
                                     <i data-lucide="trash" class="w-4 h-4 inline"></i> Delete
@@ -1190,6 +1192,8 @@
                     `;
                 });
                 lucide.createIcons();
+            }, err => {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-red-400">Error loading students: ' + err.message + '</td></tr>';
             });
         }
 
@@ -1208,16 +1212,19 @@
         function loadMessages() {
             const container = document.getElementById('messages-list');
 
-            db.collection('messages').orderBy('timestamp', 'desc').onSnapshot(snap => {
+            db.collection('messages').onSnapshot(snap => {
                 if (snap.empty) {
                     container.innerHTML = '<div class="glass rounded-xl p-8 text-center text-gray-400"><i data-lucide="inbox" class="w-12 h-12 mx-auto mb-4 opacity-50"></i><p>No messages</p></div>';
                     return;
                 }
 
+                // Sort by timestamp descending client-side
+                const docs = [];
+                snap.forEach(doc => docs.push({id: doc.id, ...doc.data()}));
+                docs.sort((a, b) => (b.timestamp || '').localeCompare(a.timestamp || ''));
+
                 container.innerHTML = '';
-                snap.forEach(doc => {
-                    const msg = doc.data();
-                    // BUG 10 FIX: guard all fields - messages from index.html may lack subject/category
+                docs.forEach(msg => {
                     const date = msg.timestamp ? new Date(msg.timestamp).toLocaleDateString() : 'N/A';
                     container.innerHTML += `
                         <div class="glass rounded-xl p-6 border border-indigo-500/20">
@@ -1233,6 +1240,8 @@
                         </div>
                     `;
                 });
+            }, err => {
+                container.innerHTML = '<div class="glass rounded-xl p-8 text-center text-red-400">Error loading messages: ' + err.message + '</div>';
             });
         }
 
