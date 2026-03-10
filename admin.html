@@ -247,6 +247,11 @@
             <div class="form-group"><label>Duration</label><input type="text" id="course-duration" placeholder="e.g., 8 weeks"></div>
             <div class="form-group"><label>Live Class URL</label><input type="url" id="course-liveUrl" placeholder="https://zoom.us/..."></div>
             <div class="form-group"><label>Schedule</label><input type="text" id="course-schedule" placeholder="e.g., Mon & Wed 7 PM"></div>
+            <div class="form-group">
+                <label>Class Materials (PDFs / Notes)</label>
+                <textarea id="course-materials" rows="4" placeholder="One item per line. Format:&#10;https://link-to-pdf.com/file.pdf | Lecture Notes&#10;https://drive.google.com/... | Assignment Sheet&#10;https://archive.org/... | Reference Book"></textarea>
+                <p style="font-size:11px;color:#9ca3af;margin-top:4px;">Format: URL | Label &nbsp;(one per line). Students will see these as downloadable links in the live class.</p>
+            </div>
             <div class="flex gap-3 pt-2">
                 <button type="button" onclick="closeCourseModal()" class="btn flex-1" style="background:rgba(107,114,128,0.4);color:white;">Cancel</button>
                 <button type="submit" class="btn btn-primary flex-1">Save Course</button>
@@ -371,6 +376,7 @@
             document.getElementById('course-title').value=x.title||'';document.getElementById('course-category').value=x.category||'';
             document.getElementById('course-description').value=x.description||'';document.getElementById('course-duration').value=x.duration||'';
             document.getElementById('course-liveUrl').value=x.liveUrl||'';document.getElementById('course-schedule').value=x.schedule||'';
+            document.getElementById('course-materials').value=x.materials||'';
             document.getElementById('course-modal').classList.add('active');
         });
     }
@@ -378,7 +384,7 @@
 
     document.getElementById('course-form').addEventListener('submit',function(e){
         e.preventDefault();
-        const data={title:document.getElementById('course-title').value,category:document.getElementById('course-category').value,description:document.getElementById('course-description').value,duration:document.getElementById('course-duration').value,liveUrl:document.getElementById('course-liveUrl').value,schedule:document.getElementById('course-schedule').value,updatedAt:new Date().toISOString()};
+        const data={title:document.getElementById('course-title').value,category:document.getElementById('course-category').value,description:document.getElementById('course-description').value,duration:document.getElementById('course-duration').value,liveUrl:document.getElementById('course-liveUrl').value,schedule:document.getElementById('course-schedule').value,materials:document.getElementById('course-materials').value.trim(),updatedAt:new Date().toISOString()};
         (currentEditingCourse?db.collection('courses').doc(currentEditingCourse).update(data):db.collection('courses').add({...data,createdAt:new Date().toISOString()}))
         .then(()=>{showAlert('course-form-alert',currentEditingCourse?'Course updated!':'Course added!','success');setTimeout(()=>closeCourseModal(),1000);})
         .catch(err=>showAlert('course-form-alert','Error: '+err.message,'error'));
