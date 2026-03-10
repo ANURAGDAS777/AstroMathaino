@@ -1,1304 +1,505 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - AstroMathaino</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
-
-    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
     <script src="firebase-config.js"></script>
-
     <style>
-        * {
-            font-family: 'Space Grotesk', sans-serif;
-        }
-
-        .cosmic-gradient {
-            background: linear-gradient(135deg, #1a0f3c 0%, #2d1b69 50%, #1e1e2e 100%);
-        }
-
-        .glass {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .sidebar {
-            min-height: calc(100vh - 73px);
-        }
-
-        .active-tab {
-            background: rgba(99, 102, 241, 0.2);
-            border-left: 4px solid #6366f1;
-        }
-
-        .alert {
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .alert-success {
-            background: rgba(34, 197, 94, 0.2);
-            border: 1px solid #22c55e;
-            color: #22c55e;
-        }
-
-        .alert-error {
-            background: rgba(239, 68, 68, 0.2);
-            border: 1px solid #ef4444;
-            color: #ef4444;
-        }
-
-        .btn {
-            padding: 10px 16px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            font-family: inherit;
-        }
-
-        .btn-primary {
-            background: #6366f1;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #4f46e5;
-            transform: translateY(-2px);
-        }
-
-        .btn-danger {
-            background: #ef4444;
-            color: white;
-        }
-
-        .btn-danger:hover {
-            background: #dc2626;
-        }
-
-        .btn-success {
-            background: #22c55e;
-            color: white;
-        }
-
-        .btn-success:hover {
-            background: #16a34a;
-        }
-
-        .card-hover {
-            transition: all 0.3s ease;
-        }
-
-        .card-hover:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.3);
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(5px);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal.active {
-            display: flex;
-        }
-
-        .modal-content {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0c29 100%);
-            border: 1px solid rgba(99, 102, 241, 0.3);
-            border-radius: 20px;
-            padding: 2rem;
-            max-width: 600px;
-            width: 90%;
-            max-height: 90vh;
-            overflow-y: auto;
-            animation: slideIn 0.3s ease-out;
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: translateY(-50px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-
-        .form-group {
-            margin-bottom: 1rem;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 0.875rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            color: #e5e7eb;
-        }
-
-        .form-group input,
-        .form-group textarea,
-        .form-group select {
-            width: 100%;
-            padding: 0.75rem;
-            border-radius: 0.5rem;
-            background: rgba(55, 65, 81, 0.5);
-            border: 1px solid rgba(107, 114, 128, 0.5);
-            color: white;
-            font-family: inherit;
-        }
-
-        .form-group input:focus,
-        .form-group textarea:focus,
-        .form-group select:focus {
-            outline: none;
-            border-color: #6366f1;
-            background: rgba(55, 65, 81, 0.8);
-        }
-
-        .form-group textarea {
-            resize: vertical;
-            min-height: 100px;
-        }
-
-        .form-group p {
-            font-size: 0.75rem;
-            color: #9ca3af;
-            margin-top: 0.25rem;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        table th {
-            text-align: left;
-            padding: 1rem;
-            background: rgba(99, 102, 241, 0.1);
-            border-bottom: 2px solid rgba(99, 102, 241, 0.3);
-            font-weight: 600;
-        }
-
-        table td {
-            padding: 1rem;
-            border-bottom: 1px solid rgba(107, 114, 128, 0.2);
-        }
-
-        table tr:hover {
-            background: rgba(99, 102, 241, 0.05);
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-
-        .badge-primary {
-            background: rgba(99, 102, 241, 0.2);
-            color: #93c5fd;
-        }
-
-        .badge-success {
-            background: rgba(34, 197, 94, 0.2);
-            color: #86efac;
-        }
-
-        .badge-warning {
-            background: rgba(245, 158, 11, 0.2);
-            color: #fcd34d;
+        * { font-family: 'Space Grotesk', sans-serif; }
+        .cosmic-gradient { background: linear-gradient(135deg, #1a0f3c 0%, #2d1b69 50%, #1e1e2e 100%); }
+        .glass { background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
+        .sidebar { width: 260px; min-height: 100vh; background: rgba(10,6,28,0.98); border-right: 1px solid rgba(239,68,68,0.15); position: fixed; top: 0; left: 0; z-index: 40; display: flex; flex-direction: column; transition: transform 0.3s ease; }
+        .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 39; }
+        .main-content { margin-left: 260px; min-height: 100vh; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 11px 16px; border-radius: 10px; cursor: pointer; transition: all 0.2s ease; color: #9ca3af; font-weight: 500; margin: 2px 8px; font-size: 14px; }
+        .nav-item:hover { background: rgba(239,68,68,0.1); color: #fca5a5; }
+        .nav-item.active { background: linear-gradient(135deg, rgba(239,68,68,0.2), rgba(220,38,38,0.1)); color: #fca5a5; border: 1px solid rgba(239,68,68,0.25); }
+        .section-label { font-size: 10px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.1em; padding: 12px 20px 4px; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(99,102,241,0.25); }
+        .alert { padding: 12px; border-radius: 8px; margin-bottom: 1rem; display: flex; align-items: center; gap: 10px; }
+        .alert-success { background: rgba(34,197,94,0.2); border: 1px solid #22c55e; color: #22c55e; }
+        .alert-error { background: rgba(239,68,68,0.2); border: 1px solid #ef4444; color: #ef4444; }
+        .btn { padding: 9px 16px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s ease; font-family: inherit; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-primary { background: #6366f1; color: white; }
+        .btn-primary:hover { background: #4f46e5; }
+        .btn-danger { background: #ef4444; color: white; }
+        .btn-danger:hover { background: #dc2626; }
+        .btn-success { background: #22c55e; color: white; }
+        .btn-success:hover { background: #16a34a; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 1000; align-items: center; justify-content: center; }
+        .modal.active { display: flex; }
+        .modal-content { background: linear-gradient(135deg, #1a1a2e, #16213e, #0f0c29); border: 1px solid rgba(99,102,241,0.3); border-radius: 20px; padding: 2rem; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto; animation: slideIn 0.3s ease-out; }
+        @keyframes slideIn { from { transform: translateY(-40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem; color: #e5e7eb; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 0.75rem; border-radius: 0.5rem; background: rgba(55,65,81,0.5); border: 1px solid rgba(107,114,128,0.5); color: white; font-family: inherit; }
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus { outline: none; border-color: #6366f1; }
+        .form-group textarea { resize: vertical; min-height: 100px; }
+        .form-group p { font-size: 0.75rem; color: #9ca3af; margin-top: 0.25rem; }
+        table { width: 100%; border-collapse: collapse; }
+        table th { text-align: left; padding: 1rem; background: rgba(99,102,241,0.1); border-bottom: 2px solid rgba(99,102,241,0.3); font-weight: 600; font-size: 13px; }
+        table td { padding: 0.875rem 1rem; border-bottom: 1px solid rgba(107,114,128,0.2); font-size: 14px; }
+        table tr:hover { background: rgba(99,102,241,0.05); }
+        .badge { display: inline-block; padding: 0.2rem 0.65rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
+        .badge-primary { background: rgba(99,102,241,0.2); color: #93c5fd; }
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); }
+            .sidebar-overlay.open { display: block; }
+            .main-content { margin-left: 0; }
         }
     </style>
 </head>
-
 <body class="cosmic-gradient min-h-screen text-white">
 
-    <!-- Navigation -->
-    <nav class="bg-gray-900/90 backdrop-blur-md border-b border-red-500/30 sticky top-0 z-50">
-        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <div class="flex items-center space-x-3">
-                <div
-                    class="w-10 h-10 bg-gradient-to-br from-red-400 to-red-600 rounded-full flex items-center justify-center">
-                    <i data-lucide="shield" class="w-6 h-6 text-white"></i>
-                </div>
-                <div>
-                    <span class="text-xl font-bold">AstroMathaino</span>
-                    <span class="text-xs text-red-400 ml-2">ADMIN</span>
-                </div>
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+<aside class="sidebar" id="sidebar">
+    <div class="p-5 border-b border-red-500/20">
+        <div class="flex items-center gap-3 mb-5">
+            <div class="w-9 h-9 bg-gradient-to-br from-red-400 to-red-600 rounded-full flex items-center justify-center flex-shrink-0">
+                <i data-lucide="shield" class="w-5 h-5 text-white"></i>
             </div>
-            <div class="flex items-center gap-6">
-                <span class="text-gray-300" id="admin-name">Anurag Das</span>
-                <button onclick="logoutAdmin()"
-                    class="bg-red-500/20 hover:bg-red-500/30 text-red-400 px-4 py-2 rounded-lg transition-colors flex items-center gap-2">
-                    <i data-lucide="log-out" class="w-4 h-4"></i> Logout
-                </button>
+            <div><span class="font-bold text-base">AstroMathaino</span><span class="text-xs text-red-400 ml-1">ADMIN</span></div>
+        </div>
+        <div class="flex items-center gap-3 bg-white/5 rounded-xl p-3">
+            <div class="w-9 h-9 rounded-full bg-gradient-to-br from-red-400 to-red-600 flex items-center justify-center flex-shrink-0 text-sm font-bold">A</div>
+            <div class="overflow-hidden">
+                <p class="text-xs text-gray-400">Logged in as</p>
+                <p class="font-semibold text-sm truncate" id="admin-name">Anurag Das</p>
             </div>
         </div>
+    </div>
+    <nav class="flex-1 py-3 overflow-y-auto">
+        <p class="section-label">Overview</p>
+        <div class="nav-item active" onclick="switchTab('dashboard')" id="nav-dashboard"><i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dashboard</div>
+        <p class="section-label mt-2">Manage</p>
+        <div class="nav-item" onclick="switchTab('courses')" id="nav-courses"><i data-lucide="video" class="w-4 h-4"></i> Courses</div>
+        <div class="nav-item" onclick="switchTab('teachers')" id="nav-teachers"><i data-lucide="users" class="w-4 h-4"></i> Teachers</div>
+        <div class="nav-item" onclick="switchTab('books')" id="nav-books"><i data-lucide="book" class="w-4 h-4"></i> Books</div>
+        <p class="section-label mt-2">Data</p>
+        <div class="nav-item" onclick="switchTab('students')" id="nav-students"><i data-lucide="users-round" class="w-4 h-4"></i> Students</div>
+        <div class="nav-item" onclick="switchTab('messages')" id="nav-messages"><i data-lucide="message-square" class="w-4 h-4"></i> Messages</div>
+        <p class="section-label mt-2">System</p>
+        <div class="nav-item" onclick="switchTab('settings')" id="nav-settings"><i data-lucide="settings" class="w-4 h-4"></i> Settings</div>
     </nav>
-
-    <div class="flex">
-        <!-- Sidebar -->
-        <aside class="w-64 bg-gray-900/50 sidebar border-r border-gray-700 hidden md:block overflow-y-auto">
-            <div class="p-4 space-y-2">
-                <button onclick="switchTab('dashboard')" id="tab-dashboard"
-                    class="active-tab w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 hover:bg-gray-800 transition-colors">
-                    <i data-lucide="home" class="w-5 h-5"></i> Dashboard
-                </button>
-                <button onclick="switchTab('courses')" id="tab-courses"
-                    class="w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 hover:bg-gray-800 transition-colors">
-                    <i data-lucide="video" class="w-5 h-5"></i> Courses
-                </button>
-                <button onclick="switchTab('teachers')" id="tab-teachers"
-                    class="w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 hover:bg-gray-800 transition-colors">
-                    <i data-lucide="users" class="w-5 h-5"></i> Teachers
-                </button>
-                <button onclick="switchTab('books')" id="tab-books"
-                    class="w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 hover:bg-gray-800 transition-colors">
-                    <i data-lucide="book" class="w-5 h-5"></i> Books
-                </button>
-                <button onclick="switchTab('students')" id="tab-students"
-                    class="w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 hover:bg-gray-800 transition-colors">
-                    <i data-lucide="users-square" class="w-5 h-5"></i> Students
-                </button>
-                <button onclick="switchTab('messages')" id="tab-messages"
-                    class="w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 hover:bg-gray-800 transition-colors">
-                    <i data-lucide="message-square" class="w-5 h-5"></i> Messages
-                </button>
-                <button onclick="switchTab('settings')" id="tab-settings"
-                    class="w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 hover:bg-gray-800 transition-colors">
-                    <i data-lucide="settings" class="w-5 h-5"></i> Settings
-                </button>
-            </div>
-        </aside>
-
-        <!-- Main Content -->
-        <main class="flex-1 p-6 overflow-auto">
-
-            <!-- Dashboard Tab -->
-            <div id="content-dashboard" class="tab-content">
-                <h2 class="text-3xl font-bold mb-8">Dashboard</h2>
-                
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                    <div class="glass rounded-xl p-6">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-gray-400 text-sm">Total Courses</p>
-                                <p class="text-3xl font-bold" id="stat-courses">0</p>
-                            </div>
-                            <i data-lucide="video" class="w-12 h-12 text-indigo-400 opacity-50"></i>
-                        </div>
-                    </div>
-
-                    <div class="glass rounded-xl p-6">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-gray-400 text-sm">Total Teachers</p>
-                                <p class="text-3xl font-bold" id="stat-teachers">0</p>
-                            </div>
-                            <i data-lucide="users" class="w-12 h-12 text-purple-400 opacity-50"></i>
-                        </div>
-                    </div>
-
-                    <div class="glass rounded-xl p-6">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-gray-400 text-sm">Total Students</p>
-                                <p class="text-3xl font-bold" id="stat-students">0</p>
-                            </div>
-                            <i data-lucide="users-square" class="w-12 h-12 text-green-400 opacity-50"></i>
-                        </div>
-                    </div>
-
-                    <div class="glass rounded-xl p-6">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-gray-400 text-sm">Total Books</p>
-                                <p class="text-3xl font-bold" id="stat-books">0</p>
-                            </div>
-                            <i data-lucide="book" class="w-12 h-12 text-pink-400 opacity-50"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="glass rounded-xl p-6">
-                    <h3 class="text-xl font-bold mb-4">Recent Messages</h3>
-                    <div id="dashboard-messages">
-                        <p class="text-gray-400">No messages yet</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Courses Tab -->
-            <div id="content-courses" class="tab-content hidden">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold">Manage Courses</h2>
-                    <button onclick="openCourseModal()"
-                        class="btn btn-success flex items-center gap-2">
-                        <i data-lucide="plus" class="w-4 h-4"></i> Add Course
-                    </button>
-                </div>
-
-                <div id="courses-alert"></div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="courses-list">
-                    <div class="glass rounded-xl p-8 text-center text-gray-400 col-span-full">
-                        <i data-lucide="loader" class="w-8 h-8 mx-auto mb-2 animate-spin"></i>
-                        <p>Loading courses...</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Teachers Tab -->
-            <div id="content-teachers" class="tab-content hidden">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold">Manage Teachers</h2>
-                    <button onclick="openTeacherModal()"
-                        class="btn btn-success flex items-center gap-2">
-                        <i data-lucide="plus" class="w-4 h-4"></i> Add Teacher
-                    </button>
-                </div>
-
-                <div id="teachers-alert"></div>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="teachers-list">
-                    <div class="glass rounded-xl p-8 text-center text-gray-400 col-span-full">
-                        <i data-lucide="loader" class="w-8 h-8 mx-auto mb-2 animate-spin"></i>
-                        <p>Loading teachers...</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Books Tab -->
-            <div id="content-books" class="tab-content hidden">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold">Manage Books</h2>
-                    <button onclick="openBookModal()"
-                        class="btn btn-success flex items-center gap-2">
-                        <i data-lucide="upload" class="w-4 h-4"></i> Upload Book
-                    </button>
-                </div>
-
-                <div id="books-alert"></div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="books-list">
-                    <div class="glass rounded-xl p-8 text-center text-gray-400 col-span-full">
-                        <i data-lucide="loader" class="w-8 h-8 mx-auto mb-2 animate-spin"></i>
-                        <p>Loading books...</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Students Tab -->
-            <div id="content-students" class="tab-content hidden">
-                <h2 class="text-2xl font-bold mb-6">Registered Students</h2>
-
-                <div id="students-alert"></div>
-
-                <div class="glass rounded-xl overflow-hidden">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Joined</th>
-                                <th>Courses</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="students-table-body">
-                            <tr>
-                                <td colspan="5" class="text-center py-8">
-                                    <i data-lucide="loader" class="w-8 h-8 mx-auto mb-2 animate-spin"></i>
-                                    <p class="text-gray-400">Loading students...</p>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Messages Tab -->
-            <div id="content-messages" class="tab-content hidden">
-                <h2 class="text-2xl font-bold mb-6">Student Messages</h2>
-
-                <div class="space-y-4" id="messages-list">
-                    <div class="glass rounded-xl p-8 text-center text-gray-400">
-                        <i data-lucide="loader" class="w-8 h-8 mx-auto mb-2 animate-spin"></i>
-                        <p>Loading messages...</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Settings Tab -->
-            <div id="content-settings" class="tab-content hidden">
-                <h2 class="text-2xl font-bold mb-6">Site Settings</h2>
-                
-                <div class="glass rounded-xl p-6 max-w-2xl">
-                    <div id="settings-alert"></div>
-
-                    <form id="settings-form" class="space-y-6">
-                        <div class="form-group">
-                            <label>Site Title</label>
-                            <input type="text" id="setting-site-title" value="AstroMathaino"
-                                placeholder="Site title">
-                        </div>
-
-                        <div class="form-group">
-                            <label>Founder Name</label>
-                            <input type="text" id="setting-founder-name" value="Anurag Das"
-                                placeholder="Founder name">
-                        </div>
-
-                        <div class="form-group">
-                            <label>Founder Photo URL</label>
-                            <input type="url" id="setting-founder-photo" value=""
-                                placeholder="https://example.com/photo.jpg">
-                        </div>
-
-                        <div class="form-group">
-                            <label>Site Description</label>
-                            <textarea id="setting-description"
-                                placeholder="Site description">Welcome to AstroMathaino - Explore the Cosmos</textarea>
-                        </div>
-
-                        <button type="submit" class="btn btn-primary">
-                            <i data-lucide="save" class="w-4 h-4 inline mr-2"></i>
-                            Save Settings
-                        </button>
-                    </form>
-                </div>
-            </div>
-
-        </main>
+    <div class="p-4 border-t border-red-500/20">
+        <button onclick="logoutAdmin()" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-colors font-medium text-sm">
+            <i data-lucide="log-out" class="w-4 h-4"></i> Logout
+        </button>
     </div>
+</aside>
 
-    <!-- Book Modal -->
-    <div id="book-modal" class="modal">
-        <div class="modal-content">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-2xl font-bold" id="book-modal-title">Upload New Book</h3>
-                <button onclick="closeBookModal()" class="text-gray-400 hover:text-white">
-                    <i data-lucide="x" class="w-6 h-6"></i>
-                </button>
+<div class="main-content">
+    <header class="bg-gray-900/80 backdrop-blur-md border-b border-red-500/20 sticky top-0 z-30 px-5 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <button onclick="openSidebar()" class="md:hidden p-2 rounded-lg bg-gray-800 text-gray-400"><i data-lucide="menu" class="w-5 h-5"></i></button>
+            <h2 class="font-bold" id="page-title">Dashboard</h2>
+        </div>
+        <span class="text-xs text-red-400 font-semibold tracking-widest uppercase">Admin Panel</span>
+    </header>
+
+    <div class="p-6">
+
+        <!-- DASHBOARD -->
+        <div id="content-dashboard" class="tab-content active">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                <div class="glass rounded-xl p-5 card-hover cursor-pointer" onclick="switchTab('courses')">
+                    <div class="flex items-center justify-between"><div><p class="text-gray-400 text-xs mb-1">Total Courses</p><p class="text-3xl font-bold" id="stat-courses">0</p></div><i data-lucide="video" class="w-10 h-10 text-indigo-400 opacity-40"></i></div>
+                </div>
+                <div class="glass rounded-xl p-5 card-hover cursor-pointer" onclick="switchTab('teachers')">
+                    <div class="flex items-center justify-between"><div><p class="text-gray-400 text-xs mb-1">Total Teachers</p><p class="text-3xl font-bold" id="stat-teachers">0</p></div><i data-lucide="users" class="w-10 h-10 text-purple-400 opacity-40"></i></div>
+                </div>
+                <div class="glass rounded-xl p-5 card-hover cursor-pointer" onclick="switchTab('students')">
+                    <div class="flex items-center justify-between"><div><p class="text-gray-400 text-xs mb-1">Total Students</p><p class="text-3xl font-bold" id="stat-students">0</p></div><i data-lucide="users-round" class="w-10 h-10 text-green-400 opacity-40"></i></div>
+                </div>
+                <div class="glass rounded-xl p-5 card-hover cursor-pointer" onclick="switchTab('books')">
+                    <div class="flex items-center justify-between"><div><p class="text-gray-400 text-xs mb-1">Total Books</p><p class="text-3xl font-bold" id="stat-books">0</p></div><i data-lucide="book" class="w-10 h-10 text-pink-400 opacity-40"></i></div>
+                </div>
             </div>
+            <div class="glass rounded-xl p-6">
+                <h3 class="text-lg font-bold mb-4 flex items-center gap-2"><i data-lucide="inbox" class="w-5 h-5 text-indigo-400"></i> Recent Messages</h3>
+                <div id="dashboard-messages"><p class="text-gray-400 text-sm">Loading...</p></div>
+            </div>
+        </div>
 
-            <form id="book-form" class="space-y-4">
-                <div id="book-form-alert"></div>
+        <!-- COURSES -->
+        <div id="content-courses" class="tab-content">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold flex items-center gap-2"><i data-lucide="video" class="w-6 h-6 text-indigo-400"></i> Manage Courses</h2>
+                <button onclick="openCourseModal()" class="btn btn-success"><i data-lucide="plus" class="w-4 h-4"></i> Add Course</button>
+            </div>
+            <div id="courses-alert"></div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="courses-list">
+                <div class="glass rounded-xl p-8 text-center text-gray-400 col-span-full"><i data-lucide="loader" class="w-8 h-8 mx-auto mb-2 animate-spin"></i><p>Loading courses...</p></div>
+            </div>
+        </div>
 
-                <div class="form-group">
-                    <label>Book Title</label>
-                    <input type="text" id="book-title" required placeholder="e.g., Astronomy Basics">
-                </div>
+        <!-- TEACHERS -->
+        <div id="content-teachers" class="tab-content">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold flex items-center gap-2"><i data-lucide="users" class="w-6 h-6 text-purple-400"></i> Manage Teachers</h2>
+                <button onclick="openTeacherModal()" class="btn btn-success"><i data-lucide="plus" class="w-4 h-4"></i> Add Teacher</button>
+            </div>
+            <div id="teachers-alert"></div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="teachers-list">
+                <div class="glass rounded-xl p-8 text-center text-gray-400 col-span-full"><i data-lucide="loader" class="w-8 h-8 mx-auto mb-2 animate-spin"></i><p>Loading teachers...</p></div>
+            </div>
+        </div>
 
-                <div class="form-group">
-                    <label>Description</label>
-                    <textarea id="book-description" required placeholder="Book description"></textarea>
-                </div>
+        <!-- BOOKS -->
+        <div id="content-books" class="tab-content">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold flex items-center gap-2"><i data-lucide="book" class="w-6 h-6 text-pink-400"></i> Manage Books</h2>
+                <button onclick="openBookModal()" class="btn btn-success"><i data-lucide="upload" class="w-4 h-4"></i> Upload Book</button>
+            </div>
+            <div id="books-alert"></div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="books-list">
+                <div class="glass rounded-xl p-8 text-center text-gray-400 col-span-full"><i data-lucide="loader" class="w-8 h-8 mx-auto mb-2 animate-spin"></i><p>Loading books...</p></div>
+            </div>
+        </div>
 
-                <div class="form-group">
-                    <label>Book Cover Image URL</label>
-                    <input type="url" id="book-cover" placeholder="https://example.com/cover.jpg">
-                    <p>Optional: Leave blank for default cover</p>
-                </div>
+        <!-- STUDENTS -->
+        <div id="content-students" class="tab-content">
+            <h2 class="text-2xl font-bold mb-6 flex items-center gap-2"><i data-lucide="users-round" class="w-6 h-6 text-green-400"></i> Registered Students</h2>
+            <div id="students-alert"></div>
+            <div class="glass rounded-xl overflow-hidden">
+                <table>
+                    <thead><tr><th>Name</th><th>Email</th><th>Joined</th><th>Courses</th><th>Actions</th></tr></thead>
+                    <tbody id="students-table-body"><tr><td colspan="5" class="text-center py-8 text-gray-400">Loading...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
 
-                <div class="form-group">
-                    <label>PDF Download Link</label>
-                    <input type="url" id="book-pdfUrl" required placeholder="https://ia601505.us.archive.org/12/items/book/book.pdf">
-                    <p>Paste your PDF link from Archive.org or any hosting service</p>
-                </div>
+        <!-- MESSAGES -->
+        <div id="content-messages" class="tab-content">
+            <h2 class="text-2xl font-bold mb-6 flex items-center gap-2"><i data-lucide="message-square" class="w-6 h-6 text-indigo-400"></i> Student Messages</h2>
+            <div class="space-y-4" id="messages-list">
+                <div class="glass rounded-xl p-8 text-center text-gray-400"><i data-lucide="loader" class="w-8 h-8 mx-auto mb-2 animate-spin"></i><p>Loading messages...</p></div>
+            </div>
+        </div>
 
-                <div class="flex gap-3 pt-4">
-                    <button type="button" onclick="closeBookModal()" class="btn" style="flex: 1; background: rgba(107, 114, 128, 0.5); border: 1px solid rgba(107, 114, 128, 0.7);">
-                        Cancel
-                    </button>
-                    <button type="submit" class="btn btn-primary" style="flex: 1;">
-                        Save Book
-                    </button>
-                </div>
-            </form>
+        <!-- SETTINGS -->
+        <div id="content-settings" class="tab-content">
+            <h2 class="text-2xl font-bold mb-6 flex items-center gap-2"><i data-lucide="settings" class="w-6 h-6 text-gray-400"></i> Site Settings</h2>
+            <div class="glass rounded-xl p-6 max-w-2xl">
+                <div id="settings-alert"></div>
+                <form id="settings-form" class="space-y-5">
+                    <div class="form-group"><label>Site Title</label><input type="text" id="setting-site-title" value="AstroMathaino"></div>
+                    <div class="form-group"><label>Founder Name</label><input type="text" id="setting-founder-name" value="Anurag Das"></div>
+                    <div class="form-group"><label>Founder Photo URL</label><input type="url" id="setting-founder-photo" value="" placeholder="https://example.com/photo.jpg"></div>
+                    <div class="form-group"><label>Site Description</label><textarea id="setting-description">Welcome to AstroMathaino - Explore the Cosmos</textarea></div>
+                    <button type="submit" class="btn btn-primary"><i data-lucide="save" class="w-4 h-4"></i> Save Settings</button>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Book Modal -->
+<div id="book-modal" class="modal">
+    <div class="modal-content">
+        <div class="flex justify-between items-center mb-4"><h3 class="text-xl font-bold" id="book-modal-title">Upload New Book</h3><button onclick="closeBookModal()" class="text-gray-400 hover:text-white"><i data-lucide="x" class="w-6 h-6"></i></button></div>
+        <form id="book-form" class="space-y-4">
+            <div id="book-form-alert"></div>
+            <div class="form-group"><label>Book Title</label><input type="text" id="book-title" required placeholder="e.g., Astronomy Basics"></div>
+            <div class="form-group"><label>Description</label><textarea id="book-description" required placeholder="Book description"></textarea></div>
+            <div class="form-group"><label>Cover Image URL (optional)</label><input type="url" id="book-cover" placeholder="https://example.com/cover.jpg"></div>
+            <div class="form-group"><label>PDF Download Link</label><input type="url" id="book-pdfUrl" required placeholder="https://ia601505.us.archive.org/..."><p>Paste your PDF link from Archive.org or any hosting</p></div>
+            <div class="flex gap-3 pt-2">
+                <button type="button" onclick="closeBookModal()" class="btn flex-1" style="background:rgba(107,114,128,0.4);color:white;">Cancel</button>
+                <button type="submit" class="btn btn-primary flex-1">Save Book</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Course Modal -->
+<div id="course-modal" class="modal">
+    <div class="modal-content">
+        <div class="flex justify-between items-center mb-4"><h3 class="text-xl font-bold" id="course-modal-title">Add New Course</h3><button onclick="closeCourseModal()" class="text-gray-400 hover:text-white"><i data-lucide="x" class="w-6 h-6"></i></button></div>
+        <form id="course-form" class="space-y-4">
+            <div id="course-form-alert"></div>
+            <div class="form-group"><label>Course Title</label><input type="text" id="course-title" required placeholder="Enter course title"></div>
+            <div class="form-group"><label>Category</label>
+                <select id="course-category" required>
+                    <option value="">Select Category</option>
+                    <option value="Astronomy">Astronomy</option>
+                    <option value="Cosmology">Cosmology</option>
+                    <option value="Universe">Universe</option>
+                    <option value="Astrophotography">Astrophotography</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <div class="form-group"><label>Description</label><textarea id="course-description" required placeholder="Course description"></textarea></div>
+            <div class="form-group"><label>Duration</label><input type="text" id="course-duration" placeholder="e.g., 8 weeks"></div>
+            <div class="form-group"><label>Live Class URL</label><input type="url" id="course-liveUrl" placeholder="https://zoom.us/..."></div>
+            <div class="form-group"><label>Schedule</label><input type="text" id="course-schedule" placeholder="e.g., Mon & Wed 7 PM"></div>
+            <div class="flex gap-3 pt-2">
+                <button type="button" onclick="closeCourseModal()" class="btn flex-1" style="background:rgba(107,114,128,0.4);color:white;">Cancel</button>
+                <button type="submit" class="btn btn-primary flex-1">Save Course</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Teacher Modal -->
+<div id="teacher-modal" class="modal">
+    <div class="modal-content">
+        <div class="flex justify-between items-center mb-4"><h3 class="text-xl font-bold" id="teacher-modal-title">Add New Teacher</h3><button onclick="closeTeacherModal()" class="text-gray-400 hover:text-white"><i data-lucide="x" class="w-6 h-6"></i></button></div>
+        <form id="teacher-form" class="space-y-4">
+            <div id="teacher-form-alert"></div>
+            <div class="form-group"><label>Teacher Name</label><input type="text" id="teacher-name" required placeholder="Teacher name"></div>
+            <div class="form-group"><label>Field of Expertise</label><input type="text" id="teacher-field" required placeholder="e.g., Astronomy"></div>
+            <div class="form-group"><label>Education</label><input type="text" id="teacher-education" required placeholder="e.g., Ph.D. in Astrophysics"></div>
+            <div class="form-group"><label>Bio</label><textarea id="teacher-bio" required placeholder="Teacher bio"></textarea></div>
+            <div class="form-group"><label>Photo URL</label><input type="url" id="teacher-photo" placeholder="https://example.com/photo.jpg"></div>
+            <div class="flex gap-3 pt-2">
+                <button type="button" onclick="closeTeacherModal()" class="btn flex-1" style="background:rgba(107,114,128,0.4);color:white;">Cancel</button>
+                <button type="submit" class="btn btn-primary flex-1">Save Teacher</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- PDF Modal -->
+<div id="admin-pdf-modal" class="modal" onclick="if(event.target===this)closeAdminPdfModal()" style="z-index:2000;">
+    <div style="background:linear-gradient(135deg,#1a1a2e,#16213e,#0f0c29);border:1px solid rgba(99,102,241,0.3);border-radius:20px;padding:1.5rem;width:95%;max-width:900px;height:90vh;display:flex;flex-direction:column;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+            <h3 style="font-size:1.1rem;font-weight:700;display:flex;align-items:center;gap:8px;"><i data-lucide="book-open" style="width:18px;height:18px;color:#818cf8;"></i> Book Preview</h3>
+            <div style="display:flex;gap:10px;">
+                <a id="admin-pdf-download" href="#" download target="_blank" class="btn btn-primary" style="font-size:0.8rem;"><i data-lucide="download" style="width:13px;height:13px;"></i> Download</a>
+                <button onclick="closeAdminPdfModal()" class="btn btn-danger" style="font-size:0.8rem;"><i data-lucide="x" style="width:13px;height:13px;"></i> Close</button>
+            </div>
+        </div>
+        <div style="flex:1;border-radius:12px;overflow:hidden;border:1px solid rgba(99,102,241,0.2);">
+            <iframe id="admin-pdf-frame" src="" style="width:100%;height:100%;background:#111827;border:none;"></iframe>
         </div>
     </div>
+</div>
 
-    <!-- Course Modal -->
-    <div id="course-modal" class="modal">
-        <div class="modal-content">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-2xl font-bold" id="course-modal-title">Add New Course</h3>
-                <button onclick="closeCourseModal()" class="text-gray-400 hover:text-white">
-                    <i data-lucide="x" class="w-6 h-6"></i>
-                </button>
-            </div>
+<script>
+    lucide.createIcons();
+    let currentAdmin=null, currentEditingCourse=null, currentEditingTeacher=null, currentEditingBook=null, studentsUnsubscribe=null;
+    const tabTitles={dashboard:'Dashboard',courses:'Manage Courses',teachers:'Manage Teachers',books:'Manage Books',students:'Students',messages:'Messages',settings:'Settings'};
 
-            <form id="course-form" class="space-y-4">
-                <div id="course-form-alert"></div>
+    function openSidebar(){document.getElementById('sidebar').classList.add('open');document.getElementById('sidebar-overlay').classList.add('open');}
+    function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('sidebar-overlay').classList.remove('open');}
 
-                <div class="form-group">
-                    <label>Course Title</label>
-                    <input type="text" id="course-title" required placeholder="Enter course title">
-                </div>
+    function switchTab(tab){
+        document.querySelectorAll('.tab-content').forEach(el=>el.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
+        document.getElementById('content-'+tab).classList.add('active');
+        document.getElementById('nav-'+tab).classList.add('active');
+        document.getElementById('page-title').textContent=tabTitles[tab]||tab;
+        closeSidebar();
+        if(tab==='dashboard')loadDashboard();
+        else if(tab==='courses')loadCourses();
+        else if(tab==='teachers')loadTeachers();
+        else if(tab==='books')loadBooks();
+        else if(tab==='students')loadStudents();
+        else if(tab==='messages')loadMessages();
+    }
 
-                <div class="form-group">
-                    <label>Category</label>
-                    <select id="course-category" required>
-                        <option value="">Select Category</option>
-                        <option value="Astronomy">Astronomy</option>
-                        <option value="Cosmology">Cosmology</option>
-                        <option value="Universe">Universe</option>
-                        <option value="Astrophotography">Astrophotography</option>
-                        <option value="Other">Other</option>
-                    </select>
-                </div>
+    function initAuth(){
+        const user=localStorage.getItem('astro_user');
+        if(!user){window.location.href='login.html';return;}
+        currentAdmin=JSON.parse(user);
+        if(currentAdmin.type!=='admin'){window.location.href='login.html';return;}
+        document.getElementById('admin-name').textContent=currentAdmin.name||'Admin';
+    }
 
-                <div class="form-group">
-                    <label>Description</label>
-                    <textarea id="course-description" required placeholder="Course description"></textarea>
-                </div>
+    function logoutAdmin(){if(confirm('Logout?')){localStorage.removeItem('astro_user');window.location.href='index.html';}}
 
-                <div class="form-group">
-                    <label>Duration</label>
-                    <input type="text" id="course-duration" placeholder="e.g., 8 weeks">
-                </div>
-
-                <div class="form-group">
-                    <label>Live Class URL</label>
-                    <input type="url" id="course-liveUrl" placeholder="https://zoom.us/...">
-                </div>
-
-                <div class="form-group">
-                    <label>Schedule</label>
-                    <input type="text" id="course-schedule" placeholder="e.g., Mon & Wed 7 PM">
-                </div>
-
-                <div class="flex gap-3 pt-4">
-                    <button type="button" onclick="closeCourseModal()" class="btn" style="flex: 1; background: rgba(107, 114, 128, 0.5); border: 1px solid rgba(107, 114, 128, 0.7);">
-                        Cancel
-                    </button>
-                    <button type="submit" class="btn btn-primary" style="flex: 1;">
-                        Save Course
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Teacher Modal -->
-    <div id="teacher-modal" class="modal">
-        <div class="modal-content">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-2xl font-bold" id="teacher-modal-title">Add New Teacher</h3>
-                <button onclick="closeTeacherModal()" class="text-gray-400 hover:text-white">
-                    <i data-lucide="x" class="w-6 h-6"></i>
-                </button>
-            </div>
-
-            <form id="teacher-form" class="space-y-4">
-                <div id="teacher-form-alert"></div>
-
-                <div class="form-group">
-                    <label>Teacher Name</label>
-                    <input type="text" id="teacher-name" required placeholder="Teacher name">
-                </div>
-
-                <div class="form-group">
-                    <label>Field of Expertise</label>
-                    <input type="text" id="teacher-field" required placeholder="e.g., Astronomy">
-                </div>
-
-                <div class="form-group">
-                    <label>Education</label>
-                    <input type="text" id="teacher-education" required placeholder="e.g., Ph.D. in Astrophysics">
-                </div>
-
-                <div class="form-group">
-                    <label>Bio</label>
-                    <textarea id="teacher-bio" required placeholder="Teacher bio"></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label>Photo URL</label>
-                    <input type="url" id="teacher-photo" placeholder="https://example.com/photo.jpg">
-                </div>
-
-                <div class="flex gap-3 pt-4">
-                    <button type="button" onclick="closeTeacherModal()" class="btn" style="flex: 1; background: rgba(107, 114, 128, 0.5); border: 1px solid rgba(107, 114, 128, 0.7);">
-                        Cancel
-                    </button>
-                    <button type="submit" class="btn btn-primary" style="flex: 1;">
-                        Save Teacher
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <script>
+    function showAlert(id,msg,type='success'){
+        const c=document.getElementById(id);
+        c.innerHTML=`<div class="alert alert-${type}"><i data-lucide="${type==='success'?'check-circle':'alert-circle'}" class="w-4 h-4"></i><span>${msg}</span></div>`;
         lucide.createIcons();
+        if(type==='success')setTimeout(()=>{c.innerHTML='';},3000);
+    }
 
-        // ============ State Management ============
-        let currentAdmin = null;
-        let currentEditingCourse = null;
-        let currentEditingTeacher = null;
-        let currentEditingBook = null;
-
-        // ============ Authentication Check ============
-        function initAuth() {
-            const user = localStorage.getItem('astro_user');
-            if (!user) {
-                window.location.href = 'login.html';
-                return;
-            }
-
-            currentAdmin = JSON.parse(user);
-
-            if (currentAdmin.type !== 'admin') {
-                window.location.href = 'login.html';
-                return;
-            }
-
-            document.getElementById('admin-name').textContent = currentAdmin.name;
-        }
-
-        // ============ Logout ============
-        function logoutAdmin() {
-            if (confirm('Are you sure you want to logout?')) {
-                localStorage.removeItem('astro_user');
-                window.location.href = 'index.html';
-            }
-        }
-
-        // ============ Tab Switching ============
-        function switchTab(tab) {
-            // Hide all tabs
-            document.querySelectorAll('.tab-content').forEach(el => {
-                el.classList.add('hidden');
+    function loadDashboard(){
+        db.collection('courses').get().then(s=>{document.getElementById('stat-courses').textContent=s.size;});
+        db.collection('teachers').get().then(s=>{document.getElementById('stat-teachers').textContent=s.size;});
+        db.collection('students').get().then(s=>{document.getElementById('stat-students').textContent=s.size;});
+        db.collection('books').get().then(s=>{document.getElementById('stat-books').textContent=s.size;});
+        db.collection('messages').get().then(snap=>{
+            const c=document.getElementById('dashboard-messages');
+            if(snap.empty){c.innerHTML='<p class="text-gray-400 text-sm">No messages yet</p>';return;}
+            const msgs=[];snap.forEach(doc=>msgs.push(doc.data()));
+            msgs.sort((a,b)=>(b.timestamp||'').localeCompare(a.timestamp||''));
+            c.innerHTML='';
+            msgs.slice(0,5).forEach(msg=>{
+                const t=msg.message||'';
+                c.innerHTML+=`<div class="p-4 bg-gray-800/30 rounded-lg border border-gray-700 mb-3"><div class="flex justify-between items-start"><div><p class="font-semibold text-sm">${msg.name||'Unknown'}</p><p class="text-xs text-gray-400">${msg.email||''}</p><p class="text-xs text-indigo-400 mt-1">${msg.subject||'(no subject)'}</p></div><span class="text-xs text-gray-500">${msg.timestamp?new Date(msg.timestamp).toLocaleDateString():''}</span></div><p class="text-sm text-gray-300 mt-2">${t.substring(0,100)}${t.length>100?'...':''}</p></div>`;
             });
+        });
+    }
 
-            // Remove active class from all buttons
-            document.querySelectorAll('aside button').forEach(btn => {
-                btn.classList.remove('active-tab');
+    function loadCourses(){
+        const c=document.getElementById('courses-list');
+        db.collection('courses').onSnapshot(snap=>{
+            if(snap.empty){c.innerHTML='<div class="glass rounded-xl p-8 text-center text-gray-400 col-span-full"><i data-lucide="inbox" class="w-12 h-12 mx-auto mb-4 opacity-50"></i><p>No courses yet</p></div>';lucide.createIcons();return;}
+            c.innerHTML='';
+            snap.forEach(doc=>{
+                const x=doc.data();
+                c.innerHTML+=`<div class="glass rounded-xl p-6 card-hover border border-indigo-500/20"><h3 class="text-lg font-bold mb-2">${x.title||''}</h3><p class="text-gray-400 text-sm mb-1"><strong>Category:</strong> ${x.category||'N/A'}</p><p class="text-gray-400 text-sm mb-1 line-clamp-2">${x.description||''}</p><p class="text-gray-400 text-sm mb-4"><strong>Duration:</strong> ${x.duration||'N/A'}</p><div class="flex gap-2"><button onclick="editCourse('${doc.id}')" class="btn btn-primary flex-1"><i data-lucide="edit" class="w-3 h-3"></i> Edit</button><button onclick="deleteCourse('${doc.id}')" class="btn btn-danger flex-1"><i data-lucide="trash" class="w-3 h-3"></i> Delete</button></div></div>`;
             });
-
-            // Show selected tab
-            const tabElement = document.getElementById(`content-${tab}`);
-            if (tabElement) {
-                tabElement.classList.remove('hidden');
-            }
-
-            // Add active class to button
-            const btnElement = document.getElementById(`tab-${tab}`);
-            if (btnElement) {
-                btnElement.classList.add('active-tab');
-            }
-
-            // Load data for tab
-            if (tab === 'dashboard') {
-                loadDashboard();
-            } else if (tab === 'courses') {
-                loadCourses();
-            } else if (tab === 'teachers') {
-                loadTeachers();
-            } else if (tab === 'books') {
-                loadBooks();
-            } else if (tab === 'students') {
-                loadStudents();
-            } else if (tab === 'messages') {
-                loadMessages();
-            }
-        }
-
-        // ============ Alert Helper ============
-        function showAlert(containerId, message, type = 'success') {
-            const container = document.getElementById(containerId);
-            container.innerHTML = `
-                <div class="alert alert-${type}">
-                    <i data-lucide="${type === 'success' ? 'check-circle' : 'alert-circle'}" class="w-4 h-4"></i>
-                    <span>${message}</span>
-                </div>
-            `;
             lucide.createIcons();
+        });
+    }
 
-            if (type === 'success') {
-                setTimeout(() => {
-                    container.innerHTML = '';
-                }, 3000);
-            }
-        }
+    function openCourseModal(){currentEditingCourse=null;document.getElementById('course-modal-title').textContent='Add New Course';document.getElementById('course-form').reset();document.getElementById('course-form-alert').innerHTML='';document.getElementById('course-modal').classList.add('active');}
+    function closeCourseModal(){document.getElementById('course-modal').classList.remove('active');}
 
-        // ============ Dashboard ============
-        function loadDashboard() {
-            db.collection('courses').get().then(snap => {
-                document.getElementById('stat-courses').textContent = snap.size;
-            });
-
-            db.collection('teachers').get().then(snap => {
-                document.getElementById('stat-teachers').textContent = snap.size;
-            });
-
-            db.collection('students').get().then(snap => {
-                document.getElementById('stat-students').textContent = snap.size;
-            });
-
-            db.collection('books').get().then(snap => {
-                document.getElementById('stat-books').textContent = snap.size;
-            });
-
-            db.collection('messages').get().then(snap => {
-                const container = document.getElementById('dashboard-messages');
-                if (snap.empty) {
-                    container.innerHTML = '<p class="text-gray-400">No messages yet</p>';
-                    return;
-                }
-
-                container.innerHTML = '';
-                snap.forEach(doc => {
-                    const msg = doc.data();
-                    // BUG 8+9 FIX: guard against undefined subject/message (index.html old form had no subject/message fields)
-                    const msgText = (msg.message || '');
-                    container.innerHTML += `
-                        <div class="p-4 bg-gray-800/30 rounded-lg border border-gray-700 mb-3">
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <p class="font-semibold">${msg.name || 'Unknown'}</p>
-                                    <p class="text-sm text-gray-400">${msg.email || ''}</p>
-                                    <p class="text-sm text-indigo-400 mt-1">${msg.subject || '(no subject)'}</p>
-                                </div>
-                                <span class="text-xs text-gray-500">${msg.timestamp ? new Date(msg.timestamp).toLocaleDateString() : ''}</span>
-                            </div>
-                            <p class="text-sm text-gray-300 mt-2">${msgText.substring(0, 100)}${msgText.length > 100 ? '...' : ''}</p>
-                        </div>
-                    `;
-                });
-            });
-        }
-
-        // ============ Courses Management ============
-        function loadCourses() {
-            const container = document.getElementById('courses-list');
-
-            db.collection('courses').onSnapshot(snap => {
-                if (snap.empty) {
-                    container.innerHTML = '<div class="glass rounded-xl p-8 text-center text-gray-400 col-span-full"><i data-lucide="inbox" class="w-12 h-12 mx-auto mb-4 opacity-50"></i><p>No courses yet</p></div>';
-                    return;
-                }
-
-                container.innerHTML = '';
-                snap.forEach(doc => {
-                    const course = doc.data();
-                    container.innerHTML += `
-                        <div class="glass rounded-xl p-6 card-hover border border-indigo-500/20">
-                            <h3 class="text-lg font-bold mb-2">${course.title}</h3>
-                            <p class="text-gray-400 text-sm mb-3"><strong>Category:</strong> ${course.category}</p>
-                            <p class="text-gray-400 text-sm mb-3 line-clamp-2">${course.description}</p>
-                            <p class="text-gray-400 text-sm mb-4"><strong>Duration:</strong> ${course.duration}</p>
-                            
-                            <div class="flex gap-2">
-                                <button onclick="editCourse('${doc.id}')" class="btn btn-primary flex-1">
-                                    <i data-lucide="edit" class="w-4 h-4 inline mr-1"></i> Edit
-                                </button>
-                                <button onclick="deleteCourse('${doc.id}')" class="btn btn-danger flex-1">
-                                    <i data-lucide="trash" class="w-4 h-4 inline mr-1"></i> Delete
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                });
-                lucide.createIcons();
-            });
-        }
-
-        function openCourseModal() {
-            currentEditingCourse = null;
-            document.getElementById('course-modal-title').textContent = 'Add New Course';
-            document.getElementById('course-form').reset();
+    function editCourse(id){
+        db.collection('courses').doc(id).get().then(doc=>{
+            if(!doc.exists)return;const x=doc.data();currentEditingCourse=id;
+            document.getElementById('course-modal-title').textContent='Edit Course';
+            document.getElementById('course-title').value=x.title||'';document.getElementById('course-category').value=x.category||'';
+            document.getElementById('course-description').value=x.description||'';document.getElementById('course-duration').value=x.duration||'';
+            document.getElementById('course-liveUrl').value=x.liveUrl||'';document.getElementById('course-schedule').value=x.schedule||'';
             document.getElementById('course-modal').classList.add('active');
-        }
-
-        function closeCourseModal() {
-            document.getElementById('course-modal').classList.remove('active');
-        }
-
-        function editCourse(courseId) {
-            db.collection('courses').doc(courseId).get().then(doc => {
-                if (doc.exists) {
-                    const course = doc.data();
-                    currentEditingCourse = courseId;
-
-                    document.getElementById('course-modal-title').textContent = 'Edit Course';
-                    document.getElementById('course-title').value = course.title;
-                    document.getElementById('course-category').value = course.category;
-                    document.getElementById('course-description').value = course.description;
-                    document.getElementById('course-duration').value = course.duration || '';
-                    document.getElementById('course-liveUrl').value = course.liveUrl || '';
-                    document.getElementById('course-schedule').value = course.schedule || '';
-
-                    document.getElementById('course-modal').classList.add('active');
-                }
-            });
-        }
-
-        function deleteCourse(courseId) {
-            if (confirm('Delete this course?')) {
-                db.collection('courses').doc(courseId).delete().then(() => {
-                    showAlert('courses-alert', 'Course deleted successfully!', 'success');
-                    loadCourses();
-                }).catch(err => {
-                    showAlert('courses-alert', 'Error: ' + err.message, 'error');
-                });
-            }
-        }
-
-        document.getElementById('course-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            const courseData = {
-                title: document.getElementById('course-title').value,
-                category: document.getElementById('course-category').value,
-                description: document.getElementById('course-description').value,
-                duration: document.getElementById('course-duration').value,
-                liveUrl: document.getElementById('course-liveUrl').value,
-                schedule: document.getElementById('course-schedule').value,
-                updatedAt: new Date().toISOString()
-            };
-
-            let savePromise;
-            if (currentEditingCourse) {
-                savePromise = db.collection('courses').doc(currentEditingCourse).update(courseData);
-            } else {
-                courseData.createdAt = new Date().toISOString();
-                savePromise = db.collection('courses').add(courseData);
-            }
-
-            savePromise.then(() => {
-                showAlert('course-form-alert', currentEditingCourse ? 'Course updated!' : 'Course added!', 'success');
-                setTimeout(() => closeCourseModal(), 1000);
-                loadCourses();
-            }).catch(err => {
-                showAlert('course-form-alert', 'Error: ' + err.message, 'error');
-            });
         });
+    }
+    function deleteCourse(id){if(confirm('Delete this course?')){db.collection('courses').doc(id).delete().then(()=>showAlert('courses-alert','Course deleted!','success')).catch(err=>showAlert('courses-alert','Error: '+err.message,'error'));}}
 
-        // ============ Teachers Management ============
-        function loadTeachers() {
-            const container = document.getElementById('teachers-list');
+    document.getElementById('course-form').addEventListener('submit',function(e){
+        e.preventDefault();
+        const data={title:document.getElementById('course-title').value,category:document.getElementById('course-category').value,description:document.getElementById('course-description').value,duration:document.getElementById('course-duration').value,liveUrl:document.getElementById('course-liveUrl').value,schedule:document.getElementById('course-schedule').value,updatedAt:new Date().toISOString()};
+        (currentEditingCourse?db.collection('courses').doc(currentEditingCourse).update(data):db.collection('courses').add({...data,createdAt:new Date().toISOString()}))
+        .then(()=>{showAlert('course-form-alert',currentEditingCourse?'Course updated!':'Course added!','success');setTimeout(()=>closeCourseModal(),1000);})
+        .catch(err=>showAlert('course-form-alert','Error: '+err.message,'error'));
+    });
 
-            db.collection('teachers').onSnapshot(snap => {
-                if (snap.empty) {
-                    container.innerHTML = '<div class="glass rounded-xl p-8 text-center text-gray-400 col-span-full"><i data-lucide="inbox" class="w-12 h-12 mx-auto mb-4 opacity-50"></i><p>No teachers yet</p></div>';
-                    return;
-                }
-
-                container.innerHTML = '';
-                snap.forEach(doc => {
-                    const teacher = doc.data();
-                    container.innerHTML += `
-                        <div class="glass rounded-xl overflow-hidden card-hover border border-purple-500/20">
-                            <div class="h-40 bg-gradient-to-br from-purple-400 to-pink-600 flex items-center justify-center">
-                                ${teacher.photo ? `<img src="${teacher.photo}" alt="${teacher.name}" class="w-full h-full object-cover">` : `<i data-lucide="user" class="w-16 h-16 text-white opacity-50"></i>`}
-                            </div>
-                            <div class="p-4">
-                                <h3 class="font-bold text-lg mb-1">${teacher.name}</h3>
-                                <p class="text-indigo-400 text-sm mb-2">${teacher.field}</p>
-                                <p class="text-gray-400 text-xs mb-3">${teacher.education}</p>
-                                
-                                <div class="flex gap-2">
-                                    <button onclick="editTeacher('${doc.id}')" class="btn btn-primary flex-1 text-sm">
-                                        <i data-lucide="edit" class="w-3 h-3 inline"></i> Edit
-                                    </button>
-                                    <button onclick="deleteTeacher('${doc.id}')" class="btn btn-danger flex-1 text-sm">
-                                        <i data-lucide="trash" class="w-3 h-3 inline"></i> Delete
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                });
-                lucide.createIcons();
+    function loadTeachers(){
+        const c=document.getElementById('teachers-list');
+        db.collection('teachers').onSnapshot(snap=>{
+            if(snap.empty){c.innerHTML='<div class="glass rounded-xl p-8 text-center text-gray-400 col-span-full"><i data-lucide="inbox" class="w-12 h-12 mx-auto mb-4 opacity-50"></i><p>No teachers yet</p></div>';lucide.createIcons();return;}
+            c.innerHTML='';
+            snap.forEach(doc=>{
+                const t=doc.data();
+                c.innerHTML+=`<div class="glass rounded-xl overflow-hidden card-hover border border-purple-500/20"><div class="h-40 bg-gradient-to-br from-purple-400 to-pink-600 flex items-center justify-center overflow-hidden">${t.photo?`<img src="${t.photo}" alt="${t.name}" class="w-full h-full object-cover">`:`<i data-lucide="user" class="w-14 h-14 text-white opacity-40"></i>`}</div><div class="p-4"><h3 class="font-bold text-base mb-1">${t.name||''}</h3><p class="text-indigo-400 text-sm mb-1">${t.field||''}</p><p class="text-gray-400 text-xs mb-3">${t.education||''}</p><div class="flex gap-2"><button onclick="editTeacher('${doc.id}')" class="btn btn-primary flex-1 text-xs"><i data-lucide="edit" class="w-3 h-3"></i> Edit</button><button onclick="deleteTeacher('${doc.id}')" class="btn btn-danger flex-1 text-xs"><i data-lucide="trash" class="w-3 h-3"></i> Delete</button></div></div></div>`;
             });
-        }
-
-        function openTeacherModal() {
-            currentEditingTeacher = null;
-            document.getElementById('teacher-modal-title').textContent = 'Add New Teacher';
-            document.getElementById('teacher-form').reset();
-            document.getElementById('teacher-modal').classList.add('active');
-        }
-
-        function closeTeacherModal() {
-            document.getElementById('teacher-modal').classList.remove('active');
-        }
-
-        function editTeacher(teacherId) {
-            db.collection('teachers').doc(teacherId).get().then(doc => {
-                if (doc.exists) {
-                    const teacher = doc.data();
-                    currentEditingTeacher = teacherId;
-
-                    document.getElementById('teacher-modal-title').textContent = 'Edit Teacher';
-                    document.getElementById('teacher-name').value = teacher.name;
-                    document.getElementById('teacher-field').value = teacher.field;
-                    document.getElementById('teacher-education').value = teacher.education;
-                    document.getElementById('teacher-bio').value = teacher.bio;
-                    document.getElementById('teacher-photo').value = teacher.photo || '';
-
-                    document.getElementById('teacher-modal').classList.add('active');
-                }
-            });
-        }
-
-        function deleteTeacher(teacherId) {
-            if (confirm('Delete this teacher?')) {
-                db.collection('teachers').doc(teacherId).delete().then(() => {
-                    showAlert('teachers-alert', 'Teacher deleted!', 'success');
-                    loadTeachers();
-                }).catch(err => {
-                    showAlert('teachers-alert', 'Error: ' + err.message, 'error');
-                });
-            }
-        }
-
-        document.getElementById('teacher-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            const teacherData = {
-                name: document.getElementById('teacher-name').value,
-                field: document.getElementById('teacher-field').value,
-                education: document.getElementById('teacher-education').value,
-                bio: document.getElementById('teacher-bio').value,
-                photo: document.getElementById('teacher-photo').value,
-                updatedAt: new Date().toISOString()
-            };
-
-            let savePromise;
-            if (currentEditingTeacher) {
-                savePromise = db.collection('teachers').doc(currentEditingTeacher).update(teacherData);
-            } else {
-                teacherData.createdAt = new Date().toISOString();
-                savePromise = db.collection('teachers').add(teacherData);
-            }
-
-            savePromise.then(() => {
-                showAlert('teacher-form-alert', currentEditingTeacher ? 'Teacher updated!' : 'Teacher added!', 'success');
-                setTimeout(() => closeTeacherModal(), 1000);
-                loadTeachers();
-            }).catch(err => {
-                showAlert('teacher-form-alert', 'Error: ' + err.message, 'error');
-            });
-        });
-
-        // ============ Books Management ============
-        function loadBooks() {
-            const container = document.getElementById('books-list');
-
-            db.collection('books').onSnapshot(snap => {
-                if (snap.empty) {
-                    container.innerHTML = `
-                        <div class="glass rounded-xl p-8 text-center text-gray-400 col-span-full">
-                            <i data-lucide="inbox" class="w-12 h-12 mx-auto mb-4 opacity-50"></i>
-                            <p>No books available at the moment.</p>
-                        </div>
-                    `;
-                    return;
-                }
-
-                container.innerHTML = '';
-                snap.forEach(doc => {
-                    const book = doc.data();
-                    const coverImg = book.cover && book.cover !== ''
-                        ? `<img src="${book.cover}" alt="${book.title}" class="w-full h-40 object-cover rounded-xl mb-3" onerror="this.style.display='none'">`
-                        : `<div class="w-full h-40 bg-gradient-to-br from-pink-600/30 to-purple-700/30 rounded-xl mb-3 flex items-center justify-center"><i data-lucide="book" class="w-12 h-12 text-pink-300 opacity-60"></i></div>`;
-                    // BUG 12 FIX: encode pdfUrl so Archive.org URLs with & ? don't break onclick
-                    const safeUrl = encodeURIComponent(book.pdfUrl || '');
-                    container.innerHTML += `
-                        <div class="glass rounded-xl p-6 card-hover border border-pink-500/20">
-                            ${coverImg}
-                            <h3 class="font-bold text-lg mb-1">${book.title || 'Book'}</h3>
-                            <p class="text-gray-400 text-sm mb-3 line-clamp-2">${book.description || ''}</p>
-                            <p class="text-xs text-indigo-300 mb-3 truncate" title="${book.pdfUrl || ''}">🔗 ${book.pdfUrl ? book.pdfUrl.substring(0, 50) + '...' : 'No link'}</p>
-                            <div class="flex gap-2 flex-wrap">
-                                <button onclick="previewAdminBook('${safeUrl}')" class="btn btn-success flex-1 text-sm">
-                                    <i data-lucide="eye" class="w-3 h-3 inline"></i> Preview
-                                </button>
-                                <button onclick="editBook('${doc.id}')" class="btn btn-primary flex-1 text-sm">
-                                    <i data-lucide="edit" class="w-3 h-3 inline"></i> Edit
-                                </button>
-                                <button onclick="deleteBook('${doc.id}')" class="btn btn-danger flex-1 text-sm">
-                                    <i data-lucide="trash" class="w-3 h-3 inline"></i> Delete
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                });
-                lucide.createIcons();
-            });
-        }
-
-        // BUG 12 FIX: decode URL that was encoded in loadBooks to handle special chars
-        function previewAdminBook(encodedUrl) {
-            const pdfUrl = decodeURIComponent(encodedUrl);
-            if (!pdfUrl) { alert('No PDF link set for this book.'); return; }
-            document.getElementById('admin-pdf-frame').src = pdfUrl;
-            document.getElementById('admin-pdf-download').href = pdfUrl;
-            document.getElementById('admin-pdf-modal').classList.add('active');
-        }
-
-        function closeAdminPdfModal() {
-            document.getElementById('admin-pdf-frame').src = '';
-            document.getElementById('admin-pdf-modal').classList.remove('active');
-        }
-
-        function openBookModal() {
-            // BUG 6 FIX: reset currentEditingBook so "Save Book" creates new instead of updating old
-            currentEditingBook = null;
-            document.getElementById('book-modal-title').textContent = 'Upload New Book';
-            document.getElementById('book-form').reset();
-            document.getElementById('book-form-alert').innerHTML = '';
-            document.getElementById('book-modal').classList.add('active');
-        }
-
-        function closeBookModal() {
-            document.getElementById('book-modal').classList.remove('active');
-        }
-
-        function editBook(bookId) {
-            db.collection('books').doc(bookId).get().then(doc => {
-                if (doc.exists) {
-                    const book = doc.data();
-                    currentEditingBook = bookId;
-
-                    document.getElementById('book-modal-title').textContent = 'Edit Book';
-                    document.getElementById('book-title').value = book.title;
-                    document.getElementById('book-description').value = book.description;
-                    document.getElementById('book-cover').value = book.cover || '';
-                    document.getElementById('book-pdfUrl').value = book.pdfUrl;
-
-                    document.getElementById('book-modal').classList.add('active');
-                }
-            });
-        }
-
-        function deleteBook(bookId) {
-            if (confirm('Delete this book?')) {
-                db.collection('books').doc(bookId).delete().then(() => {
-                    showAlert('books-alert', 'Book deleted!', 'success');
-                    loadBooks();
-                }).catch(err => {
-                    showAlert('books-alert', 'Error: ' + err.message, 'error');
-                });
-            }
-        }
-
-        document.getElementById('book-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            const title = document.getElementById('book-title').value.trim();
-            const description = document.getElementById('book-description').value.trim();
-            const cover = document.getElementById('book-cover').value.trim();
-            const pdfUrl = document.getElementById('book-pdfUrl').value.trim();
-
-            if (!title || !description || !pdfUrl) {
-                showAlert('book-form-alert', 'Please fill in Title, Description and PDF Link.', 'error');
-                return;
-            }
-
-            const saveBtn = e.target.querySelector('button[type="submit"]');
-            const origText = saveBtn.textContent;
-            saveBtn.textContent = 'Saving...';
-            saveBtn.disabled = true;
-
-            const bookData = { title, description, cover, pdfUrl, uploadDate: new Date().toISOString() };
-
-            let savePromise;
-            if (currentEditingBook) {
-                savePromise = db.collection('books').doc(currentEditingBook).update(bookData);
-            } else {
-                savePromise = db.collection('books').add(bookData);
-            }
-
-            savePromise.then(() => {
-                showAlert('book-form-alert', currentEditingBook ? 'Book updated successfully!' : 'Book uploaded successfully!', 'success');
-                saveBtn.textContent = origText;
-                saveBtn.disabled = false;
-                setTimeout(() => closeBookModal(), 1500);
-            }).catch(err => {
-                showAlert('book-form-alert', 'Error saving book: ' + err.message, 'error');
-                saveBtn.textContent = origText;
-                saveBtn.disabled = false;
-            });
-        });
-
-        // ============ Students Management ============
-        let studentsUnsubscribe = null;
-        function loadStudents() {
-            const tbody = document.getElementById('students-table-body');
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-gray-400">Loading...</td></tr>';
-
-            // Unsubscribe previous listener to avoid stacking
-            if (studentsUnsubscribe) { studentsUnsubscribe(); studentsUnsubscribe = null; }
-
-            studentsUnsubscribe = db.collection('students').onSnapshot(snap => {
-                if (snap.empty) {
-                    tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-gray-400">No students registered yet</td></tr>';
-                    return;
-                }
-
-                tbody.innerHTML = '';
-                snap.forEach(doc => {
-                    const student = doc.data();
-                    const rawDate = student.created_at || student.createdAt || null;
-                    const joinDate = rawDate ? new Date(rawDate).toLocaleDateString() : 'N/A';
-
-                    tbody.innerHTML += `
-                        <tr>
-                            <td><strong>${student.name || 'N/A'}</strong></td>
-                            <td>${student.email || doc.id}</td>
-                            <td>${joinDate}</td>
-                            <td><span class="badge badge-primary">${(student.enrolledCourses || []).length}</span></td>
-                            <td>
-                                <button onclick="deleteStudent('${doc.id}')" class="text-red-400 hover:text-red-300 text-sm">
-                                    <i data-lucide="trash" class="w-4 h-4 inline"></i> Delete
-                                </button>
-                            </td>
-                        </tr>
-                    `;
-                });
-                lucide.createIcons();
-            }, err => {
-                tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-red-400">Error loading students: ' + err.message + '</td></tr>';
-            });
-        }
-
-        function deleteStudent(studentId) {
-            if (confirm('Delete this student?')) {
-                db.collection('students').doc(studentId).delete().then(() => {
-                    showAlert('students-alert', 'Student deleted!', 'success');
-                    loadStudents();
-                }).catch(err => {
-                    showAlert('students-alert', 'Error: ' + err.message, 'error');
-                });
-            }
-        }
-
-        // ============ Messages Management ============
-        function loadMessages() {
-            const container = document.getElementById('messages-list');
-
-            db.collection('messages').onSnapshot(snap => {
-                if (snap.empty) {
-                    container.innerHTML = '<div class="glass rounded-xl p-8 text-center text-gray-400"><i data-lucide="inbox" class="w-12 h-12 mx-auto mb-4 opacity-50"></i><p>No messages</p></div>';
-                    return;
-                }
-
-                // Sort by timestamp descending client-side
-                const docs = [];
-                snap.forEach(doc => docs.push({id: doc.id, ...doc.data()}));
-                docs.sort((a, b) => (b.timestamp || '').localeCompare(a.timestamp || ''));
-
-                container.innerHTML = '';
-                docs.forEach(msg => {
-                    const date = msg.timestamp ? new Date(msg.timestamp).toLocaleDateString() : 'N/A';
-                    container.innerHTML += `
-                        <div class="glass rounded-xl p-6 border border-indigo-500/20">
-                            <div class="flex justify-between items-start mb-2">
-                                <div>
-                                    <h4 class="font-bold">${msg.subject || '(no subject)'}</h4>
-                                    <p class="text-sm text-gray-400">From: ${msg.name || 'Unknown'} (${msg.email || ''})</p>
-                                </div>
-                                <span class="text-xs text-gray-500">${date}</span>
-                            </div>
-                            ${msg.category ? `<p class="text-sm text-gray-300 mb-2"><span class="badge badge-primary">${msg.category}</span></p>` : ''}
-                            <p class="text-gray-300">${msg.message || ''}</p>
-                        </div>
-                    `;
-                });
-            }, err => {
-                container.innerHTML = '<div class="glass rounded-xl p-8 text-center text-red-400">Error loading messages: ' + err.message + '</div>';
-            });
-        }
-
-        // ============ Settings ============
-        document.getElementById('settings-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            const settings = {
-                siteTitle: document.getElementById('setting-site-title').value,
-                founderName: document.getElementById('setting-founder-name').value,
-                photoUrl: document.getElementById('setting-founder-photo').value,
-                description: document.getElementById('setting-description').value,
-                updatedAt: new Date().toISOString()
-            };
-
-            db.collection('settings').doc('founder').set(settings, { merge: true }).then(() => {
-                showAlert('settings-alert', 'Settings saved!', 'success');
-            }).catch(err => {
-                showAlert('settings-alert', 'Error: ' + err.message, 'error');
-            });
-        });
-
-        // ============ Initialize ============
-        document.addEventListener('DOMContentLoaded', function() {
             lucide.createIcons();
-            initAuth();
-            loadDashboard();
-            loadBooks();
         });
+    }
 
-        // Close admin PDF modal on Escape
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') closeAdminPdfModal();
+    function openTeacherModal(){currentEditingTeacher=null;document.getElementById('teacher-modal-title').textContent='Add New Teacher';document.getElementById('teacher-form').reset();document.getElementById('teacher-form-alert').innerHTML='';document.getElementById('teacher-modal').classList.add('active');}
+    function closeTeacherModal(){document.getElementById('teacher-modal').classList.remove('active');}
+
+    function editTeacher(id){
+        db.collection('teachers').doc(id).get().then(doc=>{
+            if(!doc.exists)return;const t=doc.data();currentEditingTeacher=id;
+            document.getElementById('teacher-modal-title').textContent='Edit Teacher';
+            document.getElementById('teacher-name').value=t.name||'';document.getElementById('teacher-field').value=t.field||'';
+            document.getElementById('teacher-education').value=t.education||'';document.getElementById('teacher-bio').value=t.bio||'';
+            document.getElementById('teacher-photo').value=t.photo||'';document.getElementById('teacher-modal').classList.add('active');
         });
-    </script>
+    }
+    function deleteTeacher(id){if(confirm('Delete this teacher?')){db.collection('teachers').doc(id).delete().then(()=>showAlert('teachers-alert','Teacher deleted!','success')).catch(err=>showAlert('teachers-alert','Error: '+err.message,'error'));}}
 
-    <!-- Admin PDF Preview Modal -->
-    <div id="admin-pdf-modal" class="modal" onclick="if(event.target===this)closeAdminPdfModal()" style="z-index:2000;">
-        <div style="background:linear-gradient(135deg,#1a1a2e,#16213e,#0f0c29);border:1px solid rgba(99,102,241,0.3);border-radius:20px;padding:1.5rem;width:95%;max-width:900px;height:90vh;display:flex;flex-direction:column;animation:slideIn 0.3s ease-out;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
-                <h3 style="font-size:1.2rem;font-weight:700;display:flex;align-items:center;gap:8px;">
-                    <i data-lucide="book-open" style="width:20px;height:20px;color:#818cf8;"></i> Book Preview
-                </h3>
-                <div style="display:flex;gap:10px;">
-                    <a id="admin-pdf-download" href="#" download target="_blank" class="btn btn-primary" style="font-size:0.85rem;display:flex;align-items:center;gap:6px;">
-                        <i data-lucide="download" style="width:14px;height:14px;"></i> Download
-                    </a>
-                    <button onclick="closeAdminPdfModal()" class="btn btn-danger" style="font-size:0.85rem;display:flex;align-items:center;gap:6px;">
-                        <i data-lucide="x" style="width:14px;height:14px;"></i> Close
-                    </button>
-                </div>
-            </div>
-            <div style="flex:1;border-radius:12px;overflow:hidden;border:1px solid rgba(99,102,241,0.2);">
-                <iframe id="admin-pdf-frame" src="" style="width:100%;height:100%;background:#111827;border:none;"></iframe>
-            </div>
-        </div>
-    </div>
+    document.getElementById('teacher-form').addEventListener('submit',function(e){
+        e.preventDefault();
+        const data={name:document.getElementById('teacher-name').value,field:document.getElementById('teacher-field').value,education:document.getElementById('teacher-education').value,bio:document.getElementById('teacher-bio').value,photo:document.getElementById('teacher-photo').value,updatedAt:new Date().toISOString()};
+        (currentEditingTeacher?db.collection('teachers').doc(currentEditingTeacher).update(data):db.collection('teachers').add({...data,createdAt:new Date().toISOString()}))
+        .then(()=>{showAlert('teacher-form-alert',currentEditingTeacher?'Teacher updated!':'Teacher added!','success');setTimeout(()=>closeTeacherModal(),1000);})
+        .catch(err=>showAlert('teacher-form-alert','Error: '+err.message,'error'));
+    });
+
+    function loadBooks(){
+        const c=document.getElementById('books-list');
+        db.collection('books').onSnapshot(snap=>{
+            if(snap.empty){c.innerHTML='<div class="glass rounded-xl p-8 text-center text-gray-400 col-span-full"><i data-lucide="inbox" class="w-12 h-12 mx-auto mb-4 opacity-50"></i><p>No books yet</p></div>';lucide.createIcons();return;}
+            c.innerHTML='';
+            snap.forEach(doc=>{
+                const b=doc.data();const safeUrl=encodeURIComponent(b.pdfUrl||'');
+                const cover=b.cover&&b.cover!==''?`<img src="${b.cover}" alt="${b.title}" class="w-full h-40 object-cover rounded-xl mb-3" onerror="this.style.display='none'">`:`<div class="w-full h-40 bg-gradient-to-br from-pink-600/30 to-purple-700/30 rounded-xl mb-3 flex items-center justify-center"><i data-lucide="book" class="w-12 h-12 text-pink-300 opacity-60"></i></div>`;
+                c.innerHTML+=`<div class="glass rounded-xl p-5 card-hover border border-pink-500/20">${cover}<h3 class="font-bold text-base mb-1">${b.title||''}</h3><p class="text-gray-400 text-sm mb-2 line-clamp-2">${b.description||''}</p><p class="text-xs text-indigo-300 mb-3 truncate">🔗 ${b.pdfUrl?b.pdfUrl.substring(0,50)+'...':'No link'}</p><div class="flex gap-2 flex-wrap"><button onclick="previewAdminBook('${safeUrl}')" class="btn btn-success flex-1 text-xs"><i data-lucide="eye" class="w-3 h-3"></i> Preview</button><button onclick="editBook('${doc.id}')" class="btn btn-primary flex-1 text-xs"><i data-lucide="edit" class="w-3 h-3"></i> Edit</button><button onclick="deleteBook('${doc.id}')" class="btn btn-danger flex-1 text-xs"><i data-lucide="trash" class="w-3 h-3"></i> Delete</button></div></div>`;
+            });
+            lucide.createIcons();
+        });
+    }
+
+    function previewAdminBook(e){const u=decodeURIComponent(e);if(!u){alert('No PDF link.');return;}document.getElementById('admin-pdf-frame').src=u;document.getElementById('admin-pdf-download').href=u;document.getElementById('admin-pdf-modal').classList.add('active');}
+    function closeAdminPdfModal(){document.getElementById('admin-pdf-frame').src='';document.getElementById('admin-pdf-modal').classList.remove('active');}
+
+    function openBookModal(){currentEditingBook=null;document.getElementById('book-modal-title').textContent='Upload New Book';document.getElementById('book-form').reset();document.getElementById('book-form-alert').innerHTML='';document.getElementById('book-modal').classList.add('active');}
+    function closeBookModal(){document.getElementById('book-modal').classList.remove('active');}
+
+    function editBook(id){
+        db.collection('books').doc(id).get().then(doc=>{
+            if(!doc.exists)return;const b=doc.data();currentEditingBook=id;
+            document.getElementById('book-modal-title').textContent='Edit Book';
+            document.getElementById('book-title').value=b.title||'';document.getElementById('book-description').value=b.description||'';
+            document.getElementById('book-cover').value=b.cover||'';document.getElementById('book-pdfUrl').value=b.pdfUrl||'';
+            document.getElementById('book-modal').classList.add('active');
+        });
+    }
+    function deleteBook(id){if(confirm('Delete this book?')){db.collection('books').doc(id).delete().then(()=>showAlert('books-alert','Book deleted!','success')).catch(err=>showAlert('books-alert','Error: '+err.message,'error'));}}
+
+    document.getElementById('book-form').addEventListener('submit',function(e){
+        e.preventDefault();
+        const title=document.getElementById('book-title').value.trim(),description=document.getElementById('book-description').value.trim(),cover=document.getElementById('book-cover').value.trim(),pdfUrl=document.getElementById('book-pdfUrl').value.trim();
+        if(!title||!description||!pdfUrl){showAlert('book-form-alert','Please fill Title, Description and PDF Link.','error');return;}
+        const btn=e.target.querySelector('button[type="submit"]'),orig=btn.textContent;
+        btn.textContent='Saving...';btn.disabled=true;
+        const data={title,description,cover,pdfUrl,uploadDate:new Date().toISOString()};
+        (currentEditingBook?db.collection('books').doc(currentEditingBook).update(data):db.collection('books').add(data))
+        .then(()=>{showAlert('book-form-alert',currentEditingBook?'Book updated!':'Book uploaded!','success');btn.textContent=orig;btn.disabled=false;setTimeout(()=>closeBookModal(),1500);})
+        .catch(err=>{showAlert('book-form-alert','Error: '+err.message,'error');btn.textContent=orig;btn.disabled=false;});
+    });
+
+    function loadStudents(){
+        const tbody=document.getElementById('students-table-body');
+        tbody.innerHTML='<tr><td colspan="5" class="text-center py-8 text-gray-400">Loading...</td></tr>';
+        if(studentsUnsubscribe){studentsUnsubscribe();studentsUnsubscribe=null;}
+        studentsUnsubscribe=db.collection('students').onSnapshot(snap=>{
+            if(snap.empty){tbody.innerHTML='<tr><td colspan="5" class="text-center py-8 text-gray-400">No students registered yet</td></tr>';return;}
+            tbody.innerHTML='';
+            snap.forEach(doc=>{
+                const s=doc.data();const rawDate=s.created_at||s.createdAt||null;const joinDate=rawDate?new Date(rawDate).toLocaleDateString():'N/A';
+                tbody.innerHTML+=`<tr><td><strong>${s.name||'N/A'}</strong></td><td class="text-gray-400">${s.email||doc.id}</td><td class="text-gray-400">${joinDate}</td><td><span class="badge badge-primary">${(s.enrolledCourses||[]).length}</span></td><td><button onclick="deleteStudent('${doc.id}')" class="text-red-400 hover:text-red-300 text-sm flex items-center gap-1"><i data-lucide="trash" class="w-4 h-4"></i> Delete</button></td></tr>`;
+            });
+            lucide.createIcons();
+        },err=>{tbody.innerHTML=`<tr><td colspan="5" class="text-center py-8 text-red-400">Error: ${err.message}</td></tr>`;});
+    }
+    function deleteStudent(id){if(confirm('Delete this student?')){db.collection('students').doc(id).delete().then(()=>showAlert('students-alert','Student deleted!','success')).catch(err=>showAlert('students-alert','Error: '+err.message,'error'));}}
+
+    function loadMessages(){
+        const c=document.getElementById('messages-list');
+        db.collection('messages').onSnapshot(snap=>{
+            if(snap.empty){c.innerHTML='<div class="glass rounded-xl p-8 text-center text-gray-400"><i data-lucide="inbox" class="w-12 h-12 mx-auto mb-4 opacity-50"></i><p>No messages yet</p></div>';lucide.createIcons();return;}
+            const docs=[];snap.forEach(doc=>docs.push({id:doc.id,...doc.data()}));
+            docs.sort((a,b)=>(b.timestamp||'').localeCompare(a.timestamp||''));
+            c.innerHTML='';
+            docs.forEach(msg=>{
+                const date=msg.timestamp?new Date(msg.timestamp).toLocaleDateString():'N/A';
+                c.innerHTML+=`<div class="glass rounded-xl p-6 border border-indigo-500/20"><div class="flex justify-between items-start mb-2"><div><h4 class="font-bold">${msg.subject||'(no subject)'}</h4><p class="text-sm text-gray-400">From: ${msg.name||'Unknown'} (${msg.email||''})</p></div><span class="text-xs text-gray-500">${date}</span></div>${msg.category?`<p class="text-sm mb-2"><span class="badge badge-primary">${msg.category}</span></p>`:''}<p class="text-gray-300 text-sm">${msg.message||''}</p></div>`;
+            });
+        },err=>{c.innerHTML=`<div class="glass rounded-xl p-8 text-center text-red-400">Error: ${err.message}</div>`;});
+    }
+
+    document.getElementById('settings-form').addEventListener('submit',function(e){
+        e.preventDefault();
+        db.collection('settings').doc('founder').set({siteTitle:document.getElementById('setting-site-title').value,founderName:document.getElementById('setting-founder-name').value,photoUrl:document.getElementById('setting-founder-photo').value,description:document.getElementById('setting-description').value,updatedAt:new Date().toISOString()},{merge:true})
+        .then(()=>showAlert('settings-alert','Settings saved!','success')).catch(err=>showAlert('settings-alert','Error: '+err.message,'error'));
+    });
+
+    document.addEventListener('DOMContentLoaded',function(){lucide.createIcons();initAuth();loadDashboard();loadBooks();});
+    document.addEventListener('keydown',e=>{if(e.key==='Escape')closeAdminPdfModal();});
+</script>
 </body>
-
 </html>
