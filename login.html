@@ -703,6 +703,16 @@
         }
 
         // Google Sign-In
+        // Check if email is blocked before allowing login
+        async function isEmailBlocked(email) {
+            try {
+                const doc = await db.collection('blocked_users').doc(email).get();
+                return doc.exists;
+            } catch(e) {
+                return false;
+            }
+        }
+
         function signInWithGoogle() {
             const provider = new firebase.auth.GoogleAuthProvider();
             auth.signInWithPopup(provider)
@@ -711,6 +721,14 @@
                     const email = user.email;
                     const name = user.displayName || email.split('@')[0];
                     const uid = user.uid;
+
+                    // Check if blocked first
+                    const blocked = await isEmailBlocked(email);
+                    if (blocked) {
+                        await auth.signOut();
+                        showAlert('login-alert', 'This account has been blocked. Contact the admin.', 'error');
+                        return;
+                    }
 
                     // Check if student doc exists, create if not
                     const docRef = db.collection('students').doc(email);
@@ -750,7 +768,13 @@
             const email = document.getElementById('student-email').value;
             const password = document.getElementById('student-password').value;
 
-            auth.signInWithEmailAndPassword(email, password)
+            // Check blocked before attempting login
+            isEmailBlocked(email).then(blocked => {
+                if (blocked) {
+                    showAlert('login-alert', 'This account has been blocked. Contact the admin.', 'error');
+                    return;
+                }
+                auth.signInWithEmailAndPassword(email, password)
                 .then((userCredential) => {
                     return db.collection('students').doc(email).get().then(doc => {
                         const studentData = doc.exists ? doc.data() : {};
@@ -782,6 +806,7 @@
                     }
                     showAlert('login-alert', message, 'error');
                 });
+            }); // end isEmailBlocked check
         });
     </script>
 </body>
