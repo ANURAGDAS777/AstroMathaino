@@ -477,12 +477,59 @@
             tbody.innerHTML='';
             snap.forEach(doc=>{
                 const s=doc.data();const rawDate=s.created_at||s.createdAt||null;const joinDate=rawDate?new Date(rawDate).toLocaleDateString():'N/A';
-                tbody.innerHTML+=`<tr><td><strong>${s.name||'N/A'}</strong></td><td class="text-gray-400">${s.email||doc.id}</td><td class="text-gray-400">${joinDate}</td><td><span class="badge badge-primary">${(s.enrolledCourses||[]).length}</span></td><td><button onclick="deleteStudent('${doc.id}')" class="text-red-400 hover:text-red-300 text-sm flex items-center gap-1"><i data-lucide="trash" class="w-4 h-4"></i> Delete</button></td></tr>`;
+                const isBlocked = s.blocked === true;
+                    tbody.innerHTML+=`<tr style="${isBlocked?'opacity:0.5;':''}">
+                        <td><strong>${s.name||'N/A'}</strong>${isBlocked?'<span class="badge" style="background:rgba(239,68,68,0.2);color:#ef4444;margin-left:6px;font-size:10px;">BLOCKED</span>':''}</td>
+                        <td class="text-gray-400">${s.email||doc.id}</td>
+                        <td class="text-gray-400">${joinDate}</td>
+                        <td><span class="badge badge-primary">${(s.enrolledCourses||[]).length}</span></td>
+                        <td>
+                            <div class="flex gap-2">
+                                ${isBlocked
+                                    ? `<button onclick="unblockStudent('${doc.id}')" class="text-green-400 hover:text-green-300 text-xs flex items-center gap-1"><i data-lucide="unlock" class="w-3 h-3"></i> Unblock</button>`
+                                    : `<button onclick="blockStudent('${doc.id}')" class="text-yellow-400 hover:text-yellow-300 text-xs flex items-center gap-1 mr-2"><i data-lucide="ban" class="w-3 h-3"></i> Block</button>`
+                                }
+                                <button onclick="deleteStudent('${doc.id}')" class="text-red-400 hover:text-red-300 text-xs flex items-center gap-1"><i data-lucide="trash" class="w-3 h-3"></i> Delete</button>
+                            </div>
+                        </td>
+                    </tr>`;
             });
             lucide.createIcons();
         },err=>{tbody.innerHTML=`<tr><td colspan="5" class="text-center py-8 text-red-400">Error: ${err.message}</td></tr>`;});
     }
-    function deleteStudent(id){if(confirm('Delete this student?')){db.collection('students').doc(id).delete().then(()=>showAlert('students-alert','Student deleted!','success')).catch(err=>showAlert('students-alert','Error: '+err.message,'error'));}}
+    function deleteStudent(id){if(confirm('Delete this student? They can register again with the same email.')){db.collection('students').doc(id).delete().then(()=>showAlert('students-alert','Student deleted!','success')).catch(err=>showAlert('students-alert','Error: '+err.message,'error'));}}
+
+    function blockStudent(email) {
+        if (confirm('Block this student? They will not be able to login with this email ever again.')) {
+            // Save to blocked list AND update student doc
+            const batch = db.batch();
+            batch.set(db.collection('blocked_users').doc(email), {
+                email: email,
+                blockedAt: new Date().toISOString()
+            });
+            batch.update(db.collection('students').doc(email), {
+                blocked: true,
+                blockedAt: new Date().toISOString()
+            });
+            batch.commit()
+                .then(() => showAlert('students-alert', 'Student blocked successfully!', 'success'))
+                .catch(err => showAlert('students-alert', 'Error: ' + err.message, 'error'));
+        }
+    }
+
+    function unblockStudent(email) {
+        if (confirm('Unblock this student? They will be able to login again.')) {
+            const batch = db.batch();
+            batch.delete(db.collection('blocked_users').doc(email));
+            batch.update(db.collection('students').doc(email), {
+                blocked: false,
+                blockedAt: null
+            });
+            batch.commit()
+                .then(() => showAlert('students-alert', 'Student unblocked!', 'success'))
+                .catch(err => showAlert('students-alert', 'Error: ' + err.message, 'error'));
+        }
+    }
 
     function loadMessages(){
         const c=document.getElementById('messages-list');
